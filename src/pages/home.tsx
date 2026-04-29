@@ -1,15 +1,25 @@
 import { Link } from "@tanstack/react-router"
+import { Presentation } from "lucide-react"
 import { sharings } from "@/sharings"
+import { ThemeToggle } from "@/components/docs/theme-toggle"
 
 export function HomePage() {
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-4xl">
+    <div className="min-h-screen bg-background">
+      <header className="flex items-center justify-between border-b border-border px-6 py-3">
+        <div className="flex items-center gap-2">
+          <Presentation className="size-5 text-primary" />
+          <span className="font-semibold text-foreground">Cool UI Design</span>
+        </div>
+        <ThemeToggle />
+      </header>
+
+      <main className="mx-auto max-w-4xl p-8">
         <h1 className="mb-2 text-4xl font-bold tracking-tight text-foreground">
-          Cool UI Design
+          Sharings
         </h1>
         <p className="mb-8 text-lg text-muted-foreground">
-          A collection of sharings on how to design cool components
+          A collection of talks on how to design cool components
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {sharings.map((sharing) => (
@@ -32,7 +42,7 @@ export function HomePage() {
             </Link>
           ))}
         </div>
-      </div>
+      </main>
     </div>
   )
 }
