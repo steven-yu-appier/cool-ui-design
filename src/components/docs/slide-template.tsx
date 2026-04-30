@@ -1,12 +1,18 @@
-import type { ReactNode } from "react"
-import { CodeBlock, CodeBlockContent } from "@notion-kit/code-block"
+import type { ReactNode } from "react";
+import {
+  CodeBlock,
+  CodeBlockContent,
+  CodeBlockLang,
+  CodeBlockToolbar,
+} from "@notion-kit/code-block";
+import { cn } from "@/lib/utils";
 
 interface SlideTemplateProps {
-  title: string
-  description?: string
-  demo?: ReactNode
-  code?: string
-  lang?: string
+  title: string;
+  description?: string;
+  demo?: ReactNode;
+  code?: string;
+  lang?: string;
 }
 
 export function SlideTemplate({
@@ -16,8 +22,8 @@ export function SlideTemplate({
   code,
   lang = "tsx",
 }: SlideTemplateProps) {
-  const hasDemo = !!demo
-  const hasCode = !!code
+  const hasDemo = !!demo;
+  const hasCode = !!code;
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden p-8 md:p-12">
@@ -36,22 +42,27 @@ export function SlideTemplate({
         >
           {hasDemo && (
             <div
-              className={`flex items-center justify-center rounded-lg border border-border bg-card p-6 ${hasCode ? "lg:flex-1" : "flex-1"}`}
+              className={cn(
+                "flex items-center justify-center rounded-lg border border-border bg-card p-6",
+                hasCode ? "lg:flex-1" : "flex-1",
+              )}
             >
               {demo}
             </div>
           )}
           {hasCode && (
-            <div
-              className={`min-h-0 overflow-auto rounded-lg ${hasDemo ? "lg:flex-1" : "flex-1"}`}
+            <CodeBlock
+              className={cn(
+                "min-h-0 overflow-auto w-200",
+                hasDemo ? "lg:flex-1" : "flex-1",
+              )}
+              defaultValue={{ code, lang, theme: "github-dark" }}
+              readonly
             >
-              <CodeBlock
-                defaultValue={{ code, lang, theme: "github-dark" }}
-                readonly
-              >
-                <CodeBlockContent />
-              </CodeBlock>
-            </div>
+              <CodeBlockLang />
+              <CodeBlockToolbar />
+              <CodeBlockContent />
+            </CodeBlock>
           )}
         </div>
       )}
@@ -62,5 +73,5 @@ export function SlideTemplate({
         </div>
       )}
     </div>
-  )
+  );
 }

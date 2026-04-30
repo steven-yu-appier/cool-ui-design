@@ -4,10 +4,10 @@ overview: Build a local presentation tool for multiple sharings about "how to de
 todos:
   - id: scaffold
     content: "Phase 1: Project scaffold (Vite + React 19 + TS + Tailwind + shadcn + TanStack Router + Jotai + Framer Motion + @notion-kit/code-block)"
-    status: pending
+    status: completed
   - id: slide-framework
     content: "Phase 2: Slide framework (SlideTemplate, SlideControls, slide viewer, home page listing sharings) + First Sharing with simple demo content"
-    status: pending
+    status: completed
   - id: selectable
     content: "Phase 3: Selectable component (copy from notion-kit, adapt to Jotai, build demo slides for Second Sharing)"
     status: pending
