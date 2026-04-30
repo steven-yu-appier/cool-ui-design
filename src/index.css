@@ -1,6 +1,0 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-
-@import "@notion-kit/tailwind-config/base.css";
-
-@source "../node_modules/@notion-kit/**";

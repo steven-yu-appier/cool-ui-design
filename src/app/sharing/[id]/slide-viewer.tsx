@@ -1,16 +1,16 @@
+"use client"
+
 import { useState, useCallback } from "react"
-import { useParams, Link } from "@tanstack/react-router"
 import { AnimatePresence, motion } from "framer-motion"
+import Link from "next/link"
 import { Home } from "lucide-react"
-import { getSharingById } from "@/sharings"
 import { SlideTemplate } from "@/components/docs/slide-template"
 import { SlideControls } from "@/components/docs/slide-controls"
 import { ThemeToggle } from "@/components/docs/theme-toggle"
 import { Button } from "@/components/ui/button"
+import type { SharingConfig } from "@/sharings/types"
 
-export function SharingPage() {
-  const { id } = useParams({ from: "/sharing/$id" })
-  const sharing = getSharingById(id)
+export function SlideViewer({ sharing }: { sharing: SharingConfig }) {
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(0)
 
@@ -22,19 +22,6 @@ export function SharingPage() {
     [slideIndex]
   )
 
-  if (!sharing) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="mb-4 text-muted-foreground">Sharing not found</p>
-          <Button variant="outline" asChild>
-            <Link to="/">Back to home</Link>
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   const slide = sharing.slides[slideIndex]!
 
   const variants = {
@@ -44,15 +31,15 @@ export function SharingPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="bg-background flex h-screen flex-col">
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link to="/">
+            <Link href="/">
               <Home className="size-4" />
             </Link>
           </Button>
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-foreground text-sm font-medium">
             {sharing.title}
           </span>
         </div>

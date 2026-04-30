@@ -1,3 +1,5 @@
+"use client"
+
 import {
   createContext,
   useCallback,
@@ -27,9 +29,10 @@ export function ThemeProvider({
   children: React.ReactNode
   defaultTheme?: Theme
 }) {
-  const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem(STORAGE_KEY) as Theme) || defaultTheme
-  )
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return defaultTheme
+    return (localStorage.getItem(STORAGE_KEY) as Theme) || defaultTheme
+  })
 
   useEffect(() => {
     const root = window.document.documentElement

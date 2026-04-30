@@ -49,7 +49,8 @@ isProject: false
 
 ## Tech Stack
 
-- **Vite + React 19 + TypeScript + TanStack Router**
+- **Vite + React 19 + TypeScript** -> **Next.js (App Router) + React 19 + TypeScript**
+- **Static Export**: The Next.js app will be configured with `output: 'export'`
 - **shadcn/ui + Tailwind CSS** (UI primitives and styling)
 - **Jotai** (selection state management)
 - **@notion-kit/code-block** (Shiki-powered code block component with syntax highlighting, language picker, and readonly mode)
@@ -63,6 +64,10 @@ isProject: false
 
 ```
 src/
+  app/
+    layout.tsx     # root layout (ThemeProvider)
+    page.tsx       # home page listing all sharings as cards
+    sharing/[id]/page.tsx # slide viewer for a single sharing
   components/
     ui/            # shadcn primitives (button, card, etc.)
     blocks/        # reusable components: Selectable, FallingBlocks
@@ -70,16 +75,14 @@ src/
   sharings/
     index.ts       # master registry: list of all sharings with metadata
     01-intro/      # First Sharing (simple demo of the slide framework)
-      registry.ts
+      registry.tsx
       slides/
     02-cool-components/  # Second Sharing (the main content)
-      registry.ts
+      registry.tsx
       slides/
-  pages/
-    home.tsx       # home page listing all sharings as cards
-    sharing.tsx    # slide viewer for a single sharing
   lib/
-    theme.ts       # dark/light theme provider
+    theme.tsx      # dark/light theme provider
+    utils.ts       # utility functions
 ```
 
 ---
@@ -118,21 +121,21 @@ A short slide deck (3-4 slides) that demonstrates the slide framework itself. Si
 
 ### Phase 1: Project Scaffold
 
-- Init Vite + React 19 + TypeScript project
-- Install and configure: Tailwind CSS, shadcn/ui, TanStack Router, Jotai, Framer Motion, `@notion-kit/code-block`
-- Set up folder structure as defined above
-- Configure dark/light theme toggle with shadcn's `ThemeProvider`
-- Set up TanStack Router: home route (`/`) for sharing list, sharing route (`/sharing/$id`) with hash-based slide index
+- Next.js (App Router) + React 19 + TypeScript project (in-place migration from Vite)
+- Configure `output: 'export'` for static HTML generation
+- Set up Tailwind CSS v4 and shadcn/ui
+- Set up folder structure: move pages to `src/app/`
+- Configure dark/light theme toggle with shadcn's `ThemeProvider` in `app/layout.tsx`
 
 ### Phase 2: Slide Framework + First Sharing
 
 - Build `SlideTemplate` component: accepts title, description, demo (ReactNode), code (string)
-- Integrate `@notion-kit/code-block` for code display: use `CodeBlockProvider` with `readonly` mode and `defaultValue={{ code, lang, theme: "github-dark" }}`
+- Integrate `@notion-kit/code-block` for code display (requires `"use client"`)
 - Build `SlideControls`: prev/next buttons + keyboard arrow navigation + slide counter
-- Build `home.tsx`: grid of sharing cards, each linking to its slide viewer
-- Build `sharing.tsx`: slide viewer that reads from a sharing's registry, renders current slide with Framer Motion horizontal transitions (AnimatePresence)
+- Build `app/page.tsx`: grid of sharing cards, each linking to its slide viewer
+- Build `app/sharing/[id]/page.tsx`: slide viewer reading from registry, rendering current slide with Framer Motion horizontal transitions (requires `"use client"` and `generateStaticParams`)
 - Build master sharing registry (`src/sharings/index.ts`) with sharing metadata
-- **Build First Sharing** (`src/sharings/01-intro/`): 3-4 simple slides (title, simple demo + code, code block showcase, closing) to validate the entire framework end-to-end
+- **Build First Sharing** (`src/sharings/01-intro/`): 3-4 simple slides to validate the entire framework end-to-end
 
 ### Phase 3: Selectable Component (Second Sharing slides 2-4)
 
