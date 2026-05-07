@@ -1,0 +1,69 @@
+diff --git a/packages/selectable/src/selectable.tsx b/packages/selectable/src/selectable.tsx
+index aa2071f..2f8c7a1 100644
+--- a/packages/selectable/src/selectable.tsx
++++ b/packages/selectable/src/selectable.tsx
+@@ -532,19 +532,64 @@ Selectable.Group = function SelectableGroup({
+ Selectable.Group = function SelectableGroup({
+   className,
+   asChild,
+   ...props
+ }: SelectableGroupProps) {
+   const Comp = asChild ? Slot : "div";
+   return <Comp className={cn(!asChild && className)} {...props} />;
+ };
+ 
++//* ============================================================================
++//* Toolbar Component
++//* ============================================================================
++
++interface SelectableToolbarProps {
++  children: (selectedIds: Set<string>) => React.ReactNode;
++  className?: string;
++  style?: React.CSSProperties;
++  offset?: { x?: number; y?: number };
++  asChild?: boolean;
++}
++
++Selectable.Toolbar = function SelectableToolbar({
++  children,
++  className,
++  style,
++  offset = {},
++  asChild,
++}: SelectableToolbarProps) {
++  const { selectedIds, isSelecting } = useSelectable();
++
++  if (selectedIds.size === 0 || isSelecting) return null;
++
++  const Comp = asChild ? Slot : "div";
++
++  return (
++    <Comp
++      className={cn(
++        !asChild &&
++          "absolute bottom-4 left-1/2 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-bottom-2",
++        className,
++      )}
++      onPointerDown={(event) => event.stopPropagation()}
++      style={{
++        ...(offset.x != null && { marginLeft: offset.x }),
++        ...(offset.y != null && { marginBottom: offset.y }),
++        ...style,
++      }}
++    >
++      {children(selectedIds)}
++    </Comp>
++  );
++};
++
+ export { Selectable };
+ export type {
+   Point,
+   Rect,
+   SelectionMode,
+   SelectableProps,
+   SelectableItemProps,
+   SelectableGroupProps,
+   SelectableOverlayProps,
++  SelectableToolbarProps,
+ };
