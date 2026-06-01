@@ -58,7 +58,7 @@ src/sharings/03-how-i-design-components/slides/workflow-slide.tsx
 src/sharings/03-how-i-design-components/slides/closing-slide.tsx
 ```
 
-Each API-focused slide should pair a small live demo with concise usage code. The description should explain design intent, not only UI behavior.
+Each API-focused slide should pair a small live demo with the component anatomy, not the full implementation code for the example. The code area should show the smallest useful usage shape: root component, key subcomponents or refs, essential props, and callback wiring. The description should explain design intent, not only UI behavior.
 
 ## Main Demo
 
@@ -81,7 +81,7 @@ The imperative form should be based on this behavior:
 - The submit button is wrapped in `Eject mode="disappear"` and ejects when submit starts.
 - After a simulated API call, the dialog ejects, the form resets, and the input value clears.
 
-The code sample should make `EjectRef` the main teaching point, with the simpler `respawn` and `disappear` modes shown as compact examples.
+The code sample should make `EjectRef` the main teaching point, but it should show only the anatomy of the interaction: refs, nested `Eject` wrappers, `mode` choices, and the calls to `ref.current?.eject()`. It should not show the full form implementation. The simpler `respawn` and `disappear` modes should be shown as compact anatomy snippets.
 
 ## SlingShot Section
 
