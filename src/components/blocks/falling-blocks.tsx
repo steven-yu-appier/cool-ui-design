@@ -10,11 +10,24 @@ const G = 0.6 // gravity per frame
 const BOUNCE = 0 // restitution
 const FRICTION = 0.86 // horizontal friction on floor/wall bounce
 const AIR_DRAG = 0.994 // per-frame velocity decay
-const SIZE = 62 // logo tile size px
-const HALF = SIZE / 2
+const DEFAULT_SIZE = 62 // fallback until an item reports its rendered size
+
+interface BodySize {
+  width: number
+  height: number
+}
+
+interface Frame extends BodySize {
+  x: number
+  y: number
+  a: number
+  on: boolean
+}
 
 interface Body {
   id: number
+  width: number
+  height: number
   x: number
   y: number
   vx: number
@@ -29,11 +42,16 @@ interface Body {
   dragStartY?: number
 }
 
-function makeBody(i: number, cw: number): Body {
+function makeBody(i: number, cw: number, size?: BodySize): Body {
+  const width = size?.width ?? DEFAULT_SIZE
+  const height = size?.height ?? DEFAULT_SIZE
+
   return {
     id: i,
-    x: HALF + Math.random() * Math.max(cw - SIZE, 1),
-    y: -HALF - i * 72,
+    width,
+    height,
+    x: width / 2 + Math.random() * Math.max(cw - width, 1),
+    y: -height / 2 - i * (height + 10),
     vx: (Math.random() - 0.5) * 4,
     vy: Math.random() * 1.5,
     angle: (Math.random() - 0.5) * 0.5,
@@ -42,6 +60,16 @@ function makeBody(i: number, cw: number): Body {
     spawned: false,
     spawnAt: i * 130, // ms
   }
+}
+
+function projectionRadius(body: Body, axis: { x: number; y: number }) {
+  const c = Math.cos(body.angle)
+  const s = Math.sin(body.angle)
+
+  return (
+    (body.width / 2) * Math.abs(c * axis.x + s * axis.y) +
+    (body.height / 2) * Math.abs(-s * axis.x + c * axis.y)
+  )
 }
 
 function collide(a: Body, b: Body, applyVelocity: boolean) {
@@ -64,12 +92,8 @@ function collide(a: Body, b: Body, applyVelocity: boolean) {
   const dy = b.y - a.y
 
   for (const axis of axes) {
-    const rA =
-      HALF * Math.abs(ca * axis.x + sa * axis.y) +
-      HALF * Math.abs(-sa * axis.x + ca * axis.y)
-    const rB =
-      HALF * Math.abs(cb * axis.x + sb * axis.y) +
-      HALF * Math.abs(-sb * axis.x + cb * axis.y)
+    const rA = projectionRadius(a, axis)
+    const rB = projectionRadius(b, axis)
 
     const dist = Math.abs(dx * axis.x + dy * axis.y)
     const overlap = rA + rB - dist
@@ -183,24 +207,28 @@ function computePhysicsStep(
     bs.forEach((b) => {
       if (!b.spawned || b.dragging) return
 
-      const bound =
-        HALF * Math.abs(Math.cos(b.angle)) + HALF * Math.abs(Math.sin(b.angle))
+      const c = Math.cos(b.angle)
+      const s = Math.sin(b.angle)
+      const xBound =
+        (b.width / 2) * Math.abs(c) + (b.height / 2) * Math.abs(s)
+      const yBound =
+        (b.width / 2) * Math.abs(s) + (b.height / 2) * Math.abs(c)
 
       // Floor
-      if (b.y + bound >= ch) {
-        b.y = ch - bound
+      if (b.y + yBound >= ch) {
+        b.y = ch - yBound
         if (iter === 0) {
           b.vy *= -BOUNCE
           b.vx *= FRICTION
           b.av *= 0.55
         }
       }
-      if (b.x - bound < 0) {
-        b.x = bound
+      if (b.x - xBound < 0) {
+        b.x = xBound
         if (iter === 0) b.vx *= -BOUNCE
       }
-      if (b.x + bound > cw) {
-        b.x = cw - bound
+      if (b.x + xBound > cw) {
+        b.x = cw - xBound
         if (iter === 0) b.vx *= -BOUNCE
       }
     })
@@ -224,19 +252,30 @@ function computePhysicsStep(
 
   return {
     anyLive,
-    newFrames: bs.map((b) => ({ x: b.x, y: b.y, a: b.angle, on: b.spawned })),
+    newFrames: bs.map((b) => ({
+      x: b.x,
+      y: b.y,
+      a: b.angle,
+      on: b.spawned,
+      width: b.width,
+      height: b.height,
+    })),
   }
 }
 
 const FallingBlocksContext = createContext<{
-  frames: { x: number; y: number; a: number; on: boolean }[]
+  frames: Frame[]
   triggerReplay: () => void
+  setItemSize: (idx: number, size: BodySize) => void
   setDragStart: (idx: number) => void
   setDragMove: (idx: number, dx: number, dy: number) => void
   setDragEnd: (idx: number, dx: number, dy: number) => void
 }>({
   frames: [],
   triggerReplay: () => {
+    // default
+  },
+  setItemSize: () => {
     // default
   },
   setDragStart: () => {
@@ -271,6 +310,7 @@ function Root({
   const wrapRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef(0)
   const bodiesRef = useRef<Body[]>([])
+  const itemSizesRef = useRef<Record<number, BodySize>>({})
   const [internalRunId, setInternalRunId] = useState(0)
   const effectiveRunId = runId ?? internalRunId
   const prevRunId = useRef(effectiveRunId)
@@ -278,9 +318,8 @@ function Root({
   const dimsRef = useRef<{ w: number; h: number }>({ w: 640, h: 420 })
   const [started, setStarted] = useState(false)
   const [activeDragId, setActiveDragId] = useState<number | null>(null)
-  const [frames, setFrames] = useState<
-    { x: number; y: number; a: number; on: boolean }[]
-  >([])
+  const [sizesVersion, setSizesVersion] = useState(0)
+  const [frames, setFrames] = useState<Frame[]>([])
 
   const count = countProp ?? React.Children.count(children)
 
@@ -323,7 +362,7 @@ function Root({
 
       if (bodiesRef.current.length !== count) {
         bodiesRef.current = Array.from({ length: count }, (_, i) =>
-          makeBody(i, cw)
+          makeBody(i, cw, itemSizesRef.current[i])
         )
         t0Ref.current = performance.now()
       }
@@ -346,7 +385,47 @@ function Root({
 
     rafRef.current = requestAnimationFrame(step)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [started, count, effectiveRunId, activeDragId])
+  }, [started, count, effectiveRunId, activeDragId, sizesVersion])
+
+  const setItemSize = React.useCallback((idx: number, size: BodySize) => {
+    if (size.width <= 0 || size.height <= 0) return
+
+    const prev = itemSizesRef.current[idx]
+    if (
+      prev &&
+      Math.abs(prev.width - size.width) < 0.5 &&
+      Math.abs(prev.height - size.height) < 0.5
+    ) {
+      return
+    }
+
+    itemSizesRef.current[idx] = size
+
+    const body = bodiesRef.current[idx]
+    if (body) {
+      body.width = size.width
+      body.height = size.height
+      body.settled = false
+
+      if (!body.spawned) {
+        const { w: cw } = dimsRef.current
+        body.x = Math.min(
+          Math.max(body.x, size.width / 2),
+          Math.max(cw - size.width / 2, size.width / 2)
+        )
+        body.y = -size.height / 2 - idx * (size.height + 10)
+      }
+    }
+
+    setFrames((prevFrames) =>
+      prevFrames.map((frame, frameIdx) =>
+        frameIdx === idx
+          ? { ...frame, width: size.width, height: size.height }
+          : frame
+      )
+    )
+    setSizesVersion((prevVersion) => prevVersion + 1)
+  }, [])
 
   const setDragStart = React.useCallback((idx: number) => {
     const body = bodiesRef.current[idx]
@@ -397,11 +476,19 @@ function Root({
     () => ({
       frames,
       triggerReplay,
+      setItemSize,
       setDragStart,
       setDragMove,
       setDragEnd,
     }),
-    [frames, triggerReplay, setDragStart, setDragMove, setDragEnd]
+    [
+      frames,
+      triggerReplay,
+      setItemSize,
+      setDragStart,
+      setDragMove,
+      setDragEnd,
+    ]
   )
 
   return (
@@ -442,30 +529,59 @@ export interface FallingBlocksItemProps extends React.ComponentProps<"div"> {
 }
 
 function Item({
+  ref,
   style,
   physicsIndex,
   className,
   asChild,
   ...props
 }: FallingBlocksItemProps) {
-  const { frames } = React.use(FallingBlocksContext)
+  const itemRef = useRef<HTMLElement | null>(null)
+  const { frames, setItemSize } = React.use(FallingBlocksContext)
   const f = physicsIndex !== undefined ? frames[physicsIndex] : null
 
-  if (!f?.on) return null
+  useEffect(() => {
+    if (physicsIndex === undefined || !itemRef.current) return
+
+    const node = itemRef.current
+    const reportSize = () => {
+      setItemSize(physicsIndex, {
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+      })
+    }
+
+    reportSize()
+    const ro = new ResizeObserver(reportSize)
+    ro.observe(node)
+
+    return () => ro.disconnect()
+  }, [physicsIndex, setItemSize])
+
+  const setRef = React.useCallback(
+    (node: HTMLElement | null) => {
+      itemRef.current = node
+      if (typeof ref === "function") ref(node as HTMLDivElement | null)
+      else if (ref) ref.current = node as HTMLDivElement | null
+    },
+    [ref]
+  )
 
   const Comp = asChild ? Slot.Root : "div"
+  const activeFrame = f?.on ? f : null
 
   return (
     <Comp
       className={cn("will-change-[transform,left,top]", className)}
+      ref={setRef}
       style={{
-        position: "absolute",
-        width: SIZE,
-        height: SIZE,
-        left: f.x - HALF,
-        top: f.y - HALF,
-        transform: `rotate(${f.a}rad)`,
         ...style,
+        position: "absolute",
+        left: activeFrame ? activeFrame.x - activeFrame.width / 2 : 0,
+        top: activeFrame ? activeFrame.y - activeFrame.height / 2 : 0,
+        transform: activeFrame ? `rotate(${activeFrame.a}rad)` : undefined,
+        visibility: activeFrame ? style?.visibility : "hidden",
+        pointerEvents: activeFrame ? style?.pointerEvents : "none",
       }}
       {...props}
     />

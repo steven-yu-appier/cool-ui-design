@@ -5,6 +5,7 @@ import { Presentation } from "lucide-react"
 import { sharings } from "@/sharings"
 import { ThemeToggle } from "@/components/docs/theme-toggle"
 import { FallingBlocks } from "@/components/blocks/falling-blocks"
+import { TooltipPreset } from "@notion-kit/ui/primitives"
 
 export default function HomePage() {
   return (
@@ -28,17 +29,16 @@ export default function HomePage() {
           {sharings.map((sharing) => (
             <FallingBlocks.Item
               key={sharing.id}
-              className="group bg-card hover:bg-accent rounded-lg border border-border p-6 transition-colors hover:border-primary/50"
+              className="group/card bg-card rounded-lg border border-border p-4 hover:border-blue"
               asChild
             >
               <Link key={sharing.id} href={`/sharing/${sharing.id}`}>
-                <h2 className="text-card-foreground mb-1 text-xl font-semibold group-hover:text-primary">
-                  {sharing.title}
-                </h2>
-                <p className="text-muted-foreground mb-3 text-sm">
-                  {sharing.description}
-                </p>
-                <div className="text-muted-foreground flex items-center justify-between text-xs">
+                <TooltipPreset description={sharing.description}>
+                  <h2 className="mb-1 text-xl font-semibold text-primary group-hover/card:text-blue">
+                    {sharing.title}
+                  </h2>
+                </TooltipPreset>
+                <div className="flex items-center justify-between text-xs text-secondary">
                   <span>{sharing.date}</span>
                   <span>{sharing.slides.length} slides</span>
                 </div>
