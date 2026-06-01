@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Presentation } from "lucide-react"
 import { sharings } from "@/sharings"
 import { ThemeToggle } from "@/components/docs/theme-toggle"
+import { FallingBlocks } from "@/components/blocks/falling-blocks"
 
 export default function HomePage() {
   return (
@@ -23,26 +24,28 @@ export default function HomePage() {
         <p className="text-muted-foreground mb-8 text-lg">
           A collection of talks on how to design cool components
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <FallingBlocks.Root className="relative h-[420px] w-full overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
           {sharings.map((sharing) => (
-            <Link
+            <FallingBlocks.Item
               key={sharing.id}
-              href={`/sharing/${sharing.id}`}
               className="group bg-card hover:bg-accent rounded-lg border border-border p-6 transition-colors hover:border-primary/50"
+              asChild
             >
-              <h2 className="text-card-foreground mb-1 text-xl font-semibold group-hover:text-primary">
-                {sharing.title}
-              </h2>
-              <p className="text-muted-foreground mb-3 text-sm">
-                {sharing.description}
-              </p>
-              <div className="text-muted-foreground flex items-center justify-between text-xs">
-                <span>{sharing.date}</span>
-                <span>{sharing.slides.length} slides</span>
-              </div>
-            </Link>
+              <Link key={sharing.id} href={`/sharing/${sharing.id}`}>
+                <h2 className="text-card-foreground mb-1 text-xl font-semibold group-hover:text-primary">
+                  {sharing.title}
+                </h2>
+                <p className="text-muted-foreground mb-3 text-sm">
+                  {sharing.description}
+                </p>
+                <div className="text-muted-foreground flex items-center justify-between text-xs">
+                  <span>{sharing.date}</span>
+                  <span>{sharing.slides.length} slides</span>
+                </div>
+              </Link>
+            </FallingBlocks.Item>
           ))}
-        </div>
+        </FallingBlocks.Root>
       </main>
     </div>
   )

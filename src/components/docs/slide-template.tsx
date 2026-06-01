@@ -59,7 +59,7 @@ export function SlideTemplate({
           )}
           {hasCode && (
             <CodeBlock
-              className="min-h-0 overflow-auto"
+              className="min-h-0"
               defaultValue={{
                 code,
                 lang,
@@ -69,7 +69,7 @@ export function SlideTemplate({
             >
               <CodeBlockLang />
               <CodeBlockToolbar />
-              <CodeBlockContent />
+              <CodeBlockContent className="overflow-auto" />
             </CodeBlock>
           )}
         </div>
