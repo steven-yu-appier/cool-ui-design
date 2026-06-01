@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import Link from "next/link"
 import { Home } from "lucide-react"
@@ -10,17 +10,64 @@ import { ThemeToggle } from "@/components/docs/theme-toggle"
 import { Button } from "@/components/ui/button"
 import type { SharingConfig } from "@/sharings/types"
 
+function getSlideHashes(sharing: SharingConfig) {
+  return sharing.slides.map((slide) => slide.id)
+}
+
 export function SlideViewer({ sharing }: { sharing: SharingConfig }) {
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(0)
 
+  const slideHashes = useMemo(() => getSlideHashes(sharing), [sharing])
+
+  const getIndexFromHash = useCallback(() => {
+    const hash = window.location.hash.slice(1)
+    if (!hash) return -1
+
+    return slideHashes.findIndex((slideHash) => slideHash === hash)
+  }, [slideHashes])
+
+  const updateHash = useCallback(
+    (next: number) => {
+      const hash = slideHashes[next]
+      if (!hash) return
+
+      window.history.replaceState(null, "", `#${hash}`)
+    },
+    [slideHashes]
+  )
+
   const goTo = useCallback(
     (next: number) => {
+      if (next < 0 || next >= sharing.slides.length) return
+
       setDirection(next > slideIndex ? 1 : -1)
       setSlideIndex(next)
+      updateHash(next)
     },
-    [slideIndex]
+    [sharing.slides.length, slideIndex, updateHash]
   )
+
+  useEffect(() => {
+    const syncSlideFromHash = () => {
+      const next = getIndexFromHash()
+
+      if (next === -1) {
+        updateHash(slideIndex)
+        return
+      }
+
+      if (next === slideIndex) return
+
+      setDirection(next > slideIndex ? 1 : -1)
+      setSlideIndex(next)
+    }
+
+    syncSlideFromHash()
+    window.addEventListener("hashchange", syncSlideFromHash)
+
+    return () => window.removeEventListener("hashchange", syncSlideFromHash)
+  }, [getIndexFromHash, slideIndex, updateHash])
 
   const slide = sharing.slides[slideIndex]!
 

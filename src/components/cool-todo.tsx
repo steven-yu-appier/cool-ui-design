@@ -1,9 +1,9 @@
-import * as React from "react";
-import { create, useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
+import * as React from "react"
+import { create, useStore } from "zustand"
+import { useShallow } from "zustand/react/shallow"
 
-import { cn } from "@notion-kit/cn";
-import { Icon } from "@notion-kit/icons";
+import { cn } from "@notion-kit/cn"
+import { Icon } from "@notion-kit/icons"
 import {
   Button,
   Checkbox,
@@ -16,30 +16,30 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@notion-kit/ui/primitives";
+} from "@notion-kit/ui/primitives"
 
-import { Eject, type EjectRef } from "./blocks/eject";
-import { FallingBlocks } from "./blocks/falling-blocks";
-import { SlingShot } from "./blocks/sling-shot";
-import { arrayMove, Sortable } from "./blocks/sortable";
+import { Eject, type EjectRef } from "./blocks/eject"
+import { FallingBlocks } from "./blocks/falling-blocks"
+import { SlingShot } from "./blocks/sling-shot"
+import { arrayMove, Sortable } from "./blocks/sortable"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface TodoItem {
-  id: string;
-  label: string;
-  status: "active" | "done" | "archived" | "launched";
+  id: string
+  label: string
+  status: "active" | "done" | "archived" | "launched"
 }
 
 interface TodoStore {
-  todos: TodoItem[];
-  addTodo: (label: string) => void;
-  checkTodo: (id: string) => void;
-  launchTodo: (id: string) => void;
-  archiveTodo: (id: string) => void;
-  restoreTodo: (id: string) => void;
-  deleteTodo: (id: string) => void;
-  reorderTodos: (activeId: string, overId: string) => void;
+  todos: TodoItem[]
+  addTodo: (label: string) => void
+  checkTodo: (id: string) => void
+  launchTodo: (id: string) => void
+  archiveTodo: (id: string) => void
+  restoreTodo: (id: string) => void
+  deleteTodo: (id: string) => void
+  reorderTodos: (activeId: string, overId: string) => void
 }
 
 // ─── Store ──────────────────────────────────────────────────────────────────
@@ -51,9 +51,9 @@ const INITIAL_TODOS: TodoItem[] = [
   { id: "4", label: "Wire up Eject on checkbox", status: "active" },
   { id: "5", label: "Add SlingShot fling-to-trash", status: "active" },
   { id: "6", label: "Implement FallingBlocks trash box", status: "active" },
-];
+]
 
-let nextId = 100;
+let nextId = 100
 
 function createTodoStore() {
   return create<TodoStore>((set) => ({
@@ -68,31 +68,36 @@ function createTodoStore() {
     checkTodo: (id) =>
       set((state) => ({
         todos: state.todos.map((t) =>
-          t.id === id ? { ...t, status: "done" } : t,
+          t.id === id ? { ...t, status: "done" } : t
         ),
       })),
     launchTodo: (id) =>
-      set((state) => ({
-        todos: state.todos.map((t) =>
-          t.id === id ? { ...t, status: "launched" } : t,
-        ),
-      })),
+      set((state) => {
+        const todo = state.todos.find((t) => t.id === id)
+        if (!todo) return state
+        return {
+          todos: [
+            ...state.todos.filter((t) => t.id !== id),
+            { ...todo, status: "launched" },
+          ],
+        }
+      }),
     archiveTodo: (id) =>
       set((state) => ({
         todos: state.todos.map((t) =>
-          t.id === id ? { ...t, status: "archived" } : t,
+          t.id === id ? { ...t, status: "archived" } : t
         ),
       })),
     restoreTodo: (id) =>
       set((state) => {
-        const todo = state.todos.find((t) => t.id === id);
-        if (!todo) return state;
+        const todo = state.todos.find((t) => t.id === id)
+        if (!todo) return state
         return {
           todos: [
             ...state.todos.filter((t) => t.id !== id),
             { ...todo, status: "active" },
           ],
-        };
+        }
       }),
     deleteTodo: (id) =>
       set((state) => ({
@@ -100,56 +105,56 @@ function createTodoStore() {
       })),
     reorderTodos: (activeId, overId) =>
       set((state) => {
-        const activeTodos = state.todos.filter((t) => t.status === "active");
-        const oldIndex = activeTodos.findIndex((t) => t.id === activeId);
-        const newIndex = activeTodos.findIndex((t) => t.id === overId);
-        if (oldIndex === -1 || newIndex === -1) return state;
-        const reordered = arrayMove(activeTodos, oldIndex, newIndex);
-        const nonActive = state.todos.filter((t) => t.status !== "active");
-        return { todos: [...reordered, ...nonActive] };
+        const activeTodos = state.todos.filter((t) => t.status === "active")
+        const oldIndex = activeTodos.findIndex((t) => t.id === activeId)
+        const newIndex = activeTodos.findIndex((t) => t.id === overId)
+        if (oldIndex === -1 || newIndex === -1) return state
+        const reordered = arrayMove(activeTodos, oldIndex, newIndex)
+        const nonActive = state.todos.filter((t) => t.status !== "active")
+        return { todos: [...reordered, ...nonActive] }
       }),
-  }));
+  }))
 }
 
 // ─── Store context ──────────────────────────────────────────────────────────
 
-type TodoStoreApi = ReturnType<typeof createTodoStore>;
-const TodoStoreContext = React.createContext<TodoStoreApi | null>(null);
+type TodoStoreApi = ReturnType<typeof createTodoStore>
+const TodoStoreContext = React.createContext<TodoStoreApi | null>(null)
 
 function useTodoStore<T>(selector: (state: TodoStore) => T): T {
-  const store = React.use(TodoStoreContext);
+  const store = React.use(TodoStoreContext)
   if (!store)
-    throw new Error("useTodoStore must be used inside TodoStoreProvider");
-  return useStore(store, selector);
+    throw new Error("useTodoStore must be used inside TodoStoreProvider")
+  return useStore(store, selector)
 }
 
 // Stable selector functions defined outside to prevent reference changes on render
 
 // Custom hooks utilizing stable selectors and shallow comparison for array slices
 const useActiveTodos = () =>
-  useTodoStore(useShallow((s) => s.todos.filter((t) => t.status === "active")));
+  useTodoStore(useShallow((s) => s.todos.filter((t) => t.status === "active")))
 const useArchivedTodos = () =>
   useTodoStore(
-    useShallow((s) => s.todos.filter((t) => t.status === "archived")),
-  );
+    useShallow((s) => s.todos.filter((t) => t.status === "archived"))
+  )
 const useLaunchedTodos = () =>
   useTodoStore(
-    useShallow((s) => s.todos.filter((t) => t.status === "launched")),
-  );
+    useShallow((s) => s.todos.filter((t) => t.status === "launched"))
+  )
 
 // ─── Components ─────────────────────────────────────────────────────────────
 
 function TodoInput() {
-  const addTodo = useTodoStore((s) => s.addTodo);
-  const [value, setValue] = React.useState("");
+  const addTodo = useTodoStore((s) => s.addTodo)
+  const [value, setValue] = React.useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    addTodo(trimmed);
-    setValue("");
-  };
+    e.preventDefault()
+    const trimmed = value.trim()
+    if (!trimmed) return
+    addTodo(trimmed)
+    setValue("")
+  }
 
   return (
     <form
@@ -172,28 +177,23 @@ function TodoInput() {
         Add
       </Button>
     </form>
-  );
+  )
 }
 
-function TodoItemCard({
-  todo,
-  hoverGroup = "todo",
-}: {
-  todo: TodoItem;
-  hoverGroup?: "todo" | "launched";
-}) {
+function TodoItemCard({ todo }: { todo: TodoItem }) {
   const { checkTodo, archiveTodo } = useTodoStore(
     useShallow((s) => ({
       checkTodo: s.checkTodo,
       archiveTodo: s.archiveTodo,
-    })),
-  );
-  const ejectRef = React.useRef<EjectRef>(null);
+      restoreTodo: s.restoreTodo,
+    }))
+  )
+  const ejectRef = React.useRef<EjectRef>(null)
 
   const handleCheck = async () => {
-    await ejectRef.current?.eject();
-    checkTodo(todo.id);
-  };
+    await ejectRef.current?.eject()
+    checkTodo(todo.id)
+  }
 
   return (
     <Eject
@@ -204,9 +204,8 @@ function TodoItemCard({
       <div
         className={cn(
           "opacity-0 transition-opacity duration-200",
-          hoverGroup === "launched"
-            ? "group-hover/launched:opacity-100"
-            : "group-hover/todo:opacity-100",
+          todo.status === "launched" && "group-hover/launched:opacity-100",
+          todo.status === "active" && "group-hover/todo:opacity-100"
         )}
       >
         <Sortable.DragHandle className="size-6" />
@@ -221,10 +220,9 @@ function TodoItemCard({
             variant="hint"
             className={cn(
               "size-6 opacity-0 transition-opacity duration-200",
-              hoverGroup === "launched"
-                ? "group-hover/launched:opacity-100"
-                : "group-hover/todo:opacity-100",
-              "has-[button[aria-expanded='true']]:opacity-100",
+              todo.status === "launched" && "group-hover/launched:opacity-100",
+              todo.status === "active" && "group-hover/todo:opacity-100",
+              "has-[button[aria-expanded='true']]:opacity-100"
             )}
           >
             <Icon.Dots className="size-4 fill-icon" />
@@ -232,6 +230,13 @@ function TodoItemCard({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuGroup>
+            {/* {todo.status === "launched" && (
+              <DropdownMenuItem
+                Body="Restore to active"
+                Icon={<Icon.Undo className="size-4" />}
+                onSelect={() => restoreTodo(todo.id)}
+              />
+            )} */}
             <DropdownMenuItem
               Body="Delete"
               Icon={<Icon.Trash />}
@@ -242,28 +247,19 @@ function TodoItemCard({
         </DropdownMenuContent>
       </DropdownMenu>
     </Eject>
-  );
+  )
 }
 
-function TrashBox() {
-  const [runId, setRunId] = React.useState(0);
-  const archivedTodos = useArchivedTodos();
-  const { restoreTodo, deleteTodo } = useTodoStore(
-    useShallow((s) => ({
-      restoreTodo: s.restoreTodo,
-      deleteTodo: s.deleteTodo,
-    })),
-  );
+function TrashBox({ className }: { className?: string }) {
+  const [runId, setRunId] = React.useState(0)
+  const archivedTodos = useArchivedTodos()
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen) setRunId((v) => v + 1);
-  };
+    if (nextOpen) setRunId((v) => v + 1)
+  }
 
   return (
-    <SlingShot.Goal
-      id="trash"
-      className="fixed right-8 bottom-8 z-50 rounded-full"
-    >
+    <SlingShot.Goal id="trash" className={cn("rounded-full", className)}>
       <Popover onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
@@ -293,51 +289,77 @@ function TrashBox() {
             className="size-full bg-input"
           >
             {archivedTodos.map((todo) => (
-              <FallingBlocks.Item
-                key={todo.id}
-                className="group/block relative flex size-[62px] cursor-grab flex-col items-center justify-center rounded-md border border-border bg-popover p-1 shadow-sm select-none"
-              >
-                <Checkbox size="xs" disabled />
-                <span className="mt-0.5 w-full truncate px-0.5 text-center text-[8px] text-secondary line-through">
-                  {todo.label}
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="hint"
-                      className="absolute right-0.5 bottom-0.5 flex size-4 items-center justify-center p-0 opacity-0 transition-opacity duration-150 group-hover/block:opacity-100"
-                    >
-                      <Icon.Dots className="size-2.5 fill-icon" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        Body="Restore"
-                        Icon={<Icon.Undo className="size-4" />}
-                        onSelect={() => restoreTodo(todo.id)}
-                      />
-                      <DropdownMenuItem
-                        Body="Delete forever"
-                        Icon={<Icon.Trash />}
-                        variant="error"
-                        onSelect={() => deleteTodo(todo.id)}
-                      />
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </FallingBlocks.Item>
+              <ArchivedTodoItem key={todo.id} todo={todo} />
             ))}
           </FallingBlocks.Root>
         </PopoverContent>
       </Popover>
     </SlingShot.Goal>
-  );
+  )
+}
+
+function ArchivedTodoItem({
+  todo,
+  physicsIndex,
+}: {
+  todo: TodoItem
+  physicsIndex?: number
+}) {
+  const ejectRef = React.useRef<EjectRef>(null)
+  const { restoreTodo, deleteTodo } = useTodoStore(
+    useShallow((s) => ({
+      restoreTodo: s.restoreTodo,
+      deleteTodo: s.deleteTodo,
+    }))
+  )
+
+  return (
+    <FallingBlocks.Item physicsIndex={physicsIndex} className="size-[62px]">
+      <Eject
+        ref={ejectRef}
+        mode="disappear"
+        className="group/block flex size-full cursor-grab flex-col items-center justify-center rounded-md border border-border bg-popover p-1 shadow-sm select-none"
+      >
+        <Checkbox size="xs" disabled />
+        <span className="mt-0.5 w-full truncate px-0.5 text-center text-[8px] text-secondary line-through">
+          {todo.label}
+        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="hint"
+              className="absolute right-0.5 bottom-0.5 flex size-4 items-center justify-center p-0 opacity-0 transition-opacity duration-150 group-hover/block:opacity-100"
+            >
+              <Icon.Dots className="size-2.5 fill-icon" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                Body="Restore"
+                Icon={<Icon.Undo className="size-4" />}
+                onSelect={() => restoreTodo(todo.id)}
+              />
+              <DropdownMenuItem
+                Body="Delete forever"
+                Icon={<Icon.Trash />}
+                variant="error"
+                onSelect={async () => {
+                  await ejectRef.current?.eject()
+                  deleteTodo(todo.id)
+                }}
+              />
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Eject>
+    </FallingBlocks.Item>
+  )
 }
 
 function ActiveTodoList() {
-  const activeTodos = useActiveTodos();
-  const reorderTodos = useTodoStore((s) => s.reorderTodos);
+  const activeTodos = useActiveTodos()
+  const reorderTodos = useTodoStore((s) => s.reorderTodos)
 
   return (
     <Sortable.Root
@@ -352,39 +374,45 @@ function ActiveTodoList() {
         </Sortable.Item>
       ))}
     </Sortable.Root>
-  );
+  )
 }
 
 function LaunchedTodoList() {
-  const launchedTodos = useLaunchedTodos();
+  const launchedTodos = useLaunchedTodos()
 
   return (
     <div style={{ height: 0, overflow: "visible", position: "relative" }}>
-      {launchedTodos.map((todo) => (
+      {launchedTodos.map((todo, index) => (
         <SlingShot.Item
           key={todo.id}
           id={todo.id}
           className="group/launched block w-full"
-          style={{ position: "absolute" as const }}
+          style={{ left: 0, position: "absolute", top: 0, zIndex: index + 10 }}
         >
-          <TodoItemCard todo={todo} hoverGroup="launched" />
+          <TodoItemCard todo={todo} />
         </SlingShot.Item>
       ))}
     </div>
-  );
+  )
 }
 
-function SlingShotPlayground() {
-  const screenRef = React.useRef<HTMLDivElement>(null);
+function SlingShotPlayground({
+  className,
+  trashClassName,
+}: {
+  className?: string
+  trashClassName?: string
+}) {
+  const screenRef = React.useRef<HTMLDivElement>(null)
   const { archiveTodo, launchTodo } = useTodoStore(
     useShallow((s) => ({
       archiveTodo: s.archiveTodo,
       launchTodo: s.launchTodo,
-    })),
-  );
+    }))
+  )
 
   return (
-    <div ref={screenRef} className="relative flex h-screen w-screen bg-main">
+    <div ref={screenRef} className={cn("relative flex bg-main", className)}>
       <SlingShot
         boundsRef={screenRef}
         onGoalHit={({ itemId }) => archiveTodo(itemId)}
@@ -404,18 +432,27 @@ function SlingShotPlayground() {
           </div>
         </div>
 
-        <TrashBox />
+        <TrashBox className={trashClassName} />
       </SlingShot>
     </div>
-  );
+  )
 }
 
-export function CoolTodo() {
-  const [store] = React.useState(createTodoStore);
+export function CoolTodo({
+  className,
+  trashClassName,
+}: {
+  className?: string
+  trashClassName?: string
+} = {}) {
+  const [store] = React.useState(createTodoStore)
 
   return (
     <TodoStoreContext value={store}>
-      <SlingShotPlayground />
+      <SlingShotPlayground
+        className={className}
+        trashClassName={trashClassName}
+      />
     </TodoStoreContext>
-  );
+  )
 }

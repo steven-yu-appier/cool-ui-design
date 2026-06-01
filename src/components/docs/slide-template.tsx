@@ -36,7 +36,7 @@ export function SlideTemplate({
           {title}
         </h2>
         {description && (
-          <p className="text-secondary mt-2 text-lg">{description}</p>
+          <p className="mt-2 text-lg text-secondary">{description}</p>
         )}
       </div>
 
@@ -44,13 +44,13 @@ export function SlideTemplate({
         <div
           className={cn(
             "grid min-h-0 flex-1 gap-6",
-            hasDemo && hasCode && "grid-cols-2"
+            hasDemo && hasCode && "grid-cols-[3fr_2fr]"
           )}
         >
           {hasDemo && (
             <div
               className={cn(
-                "bg-card border-border flex items-center justify-center rounded-lg border p-6",
+                "bg-card flex items-center justify-center rounded-lg border border-border p-6",
                 hasCode ? "lg:flex-1" : "flex-1"
               )}
             >
@@ -77,7 +77,7 @@ export function SlideTemplate({
 
       {!hasDemo && !hasCode && (
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-secondary text-center text-xl">{title}</p>
+          <p className="text-center text-xl text-secondary">{title}</p>
         </div>
       )}
     </div>
