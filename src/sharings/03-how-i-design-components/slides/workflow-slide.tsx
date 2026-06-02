@@ -19,15 +19,13 @@ export function WorkflowSlide() {
       {steps.map((step, index) => (
         <div
           key={step.title}
-          className="flex min-h-80 flex-col justify-between rounded-lg border border-border bg-popover p-6"
+          className="flex min-h-60 flex-col gap-4 rounded-lg border border-border bg-popover p-6"
         >
-          <div className="text-sm font-semibold text-primary">
+          <div className="text-sm font-semibold text-secondary">
             Step {index + 1}
           </div>
           <div>
-            <h2 className="text-foreground text-2xl font-bold">
-              {step.title}
-            </h2>
+            <h2 className="text-foreground text-2xl font-bold">{step.title}</h2>
             <p className="mt-4 text-base leading-7 text-secondary">
               {step.body}
             </p>

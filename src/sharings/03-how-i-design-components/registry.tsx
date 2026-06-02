@@ -1,5 +1,9 @@
 import type { SharingConfig } from "../types"
 import { BackgroundSlide } from "./slides/background-slide"
+import {
+  BaseUiMenuAnatomySlide,
+  baseUiMenuAnatomyCode,
+} from "./slides/base-ui-menu-anatomy"
 import { ClosingSlide } from "./slides/closing-slide"
 import { CompoundPatternSlide } from "./slides/compound-pattern-slide"
 import { CoolTodoDemoSlide } from "./slides/cool-todo-demo"
@@ -67,6 +71,15 @@ export const howIDesignComponentsSharing: SharingConfig = {
         "A root-owned simulation where children render as falling tiles through shared physics state.",
       demo: () => <FallingBlocksDemo />,
       code: fallingBlocksAnatomyCode,
+      lang: "tsx",
+    },
+    {
+      id: "base-ui-menu-anatomy",
+      title: "Base UI Menu anatomy",
+      description:
+        "A production compound API where every behavior becomes a named slot.",
+      demo: () => <BaseUiMenuAnatomySlide />,
+      code: baseUiMenuAnatomyCode,
       lang: "tsx",
     },
     {
