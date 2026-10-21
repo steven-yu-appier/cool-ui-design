@@ -1,6 +1,6 @@
 {
   "name": "cool-ui-design",
-  "packageManager": "pnpm@10.29.2",
+  "packageManager": "pnpm@11.0.8",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -26,6 +26,7 @@
     "framer-motion": "^12.38.0",
     "jotai": "^2.19.1",
     "lucide-react": "^1.14.0",
+    "morphicons": "^2.0.0",
     "next": "^16.2.4",
     "radix-ui": "^1.4.3",
     "react": "^19.2.5",
