@@ -46,6 +46,34 @@ export default function HomePage() {
             </FallingBlocks.Item>
           ))}
         </FallingBlocks.Root>
+        <Link
+          href="/demos/html-in-canvas"
+          className="bg-card mt-6 block rounded-lg border border-border p-5 transition-colors hover:border-emerald-400"
+        >
+          <p className="text-muted-foreground mb-2 text-xs tracking-widest">
+            INTERACTIVE EXPERIMENT
+          </p>
+          <h2 className="text-foreground text-xl font-semibold">
+            HTML-in-Canvas · Holographic control panel ↗
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            把真正可互動的 HTML，投射進另一個維度。
+          </p>
+        </Link>
+        <Link
+          href="/demos/holographic-map"
+          className="bg-card mt-4 block rounded-lg border border-border p-5 transition-colors hover:border-amber-400"
+        >
+          <p className="text-muted-foreground mb-2 text-xs tracking-widest">
+            SPATIAL HTML EXPERIMENT
+          </p>
+          <h2 className="text-foreground text-xl font-semibold">
+            ATLAS · Taipei holographic map ↗
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            點選城市，讓可互動的 HTML 成為 3D 地圖裡的投影材質。
+          </p>
+        </Link>
       </main>
     </div>
   )
