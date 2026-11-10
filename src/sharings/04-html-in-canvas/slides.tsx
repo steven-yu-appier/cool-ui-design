@@ -1,17 +1,9 @@
 import type { ReactNode } from "react"
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Box,
-  Code2,
-  MousePointer2,
-  ScanLine,
-} from "lucide-react"
+import { ArrowRight, ArrowUpRight, Code2, ScanLine } from "lucide-react"
 
 function Frame({ children }: { children: ReactNode }) {
   return <div className="w-full max-w-5xl space-y-7">{children}</div>
 }
-
 function Cards({ items }: { items: { title: string; body: string }[] }) {
   return (
     <div className="grid grid-cols-3 gap-5">
@@ -30,7 +22,6 @@ function Cards({ items }: { items: { title: string; body: string }[] }) {
     </div>
   )
 }
-
 export function TitleSlide() {
   return (
     <Frame>
@@ -41,256 +32,248 @@ export function TitleSlide() {
         Beyond the <span className="text-emerald-500">DOM.</span>
       </h1>
       <p className="text-2xl leading-10 text-secondary">
-        如果 Canvas 裡的表單，還是真的 HTML？
+        如果 3D 螢幕裡的播放器，還是真的 HTML？
       </p>
-      <div className="mt-10 flex items-center gap-7 rounded-xl border border-border bg-popover px-8 py-7">
+      <div className="flex items-center gap-7 rounded-xl border border-border bg-popover px-8 py-7">
         <Code2 className="size-8 text-emerald-500" />
         <span className="text-xl">HTML</span>
         <ArrowRight className="text-secondary" />
-        <span className="text-xl">paint</span>
+        <span className="text-xl">Canvas texture</span>
         <ArrowRight className="text-secondary" />
         <ScanLine className="size-8 text-emerald-500" />
-        <span className="text-xl">Canvas</span>
-        <span className="ml-auto text-sm text-secondary">
-          input / focus / semantics
-        </span>
+        <span className="text-xl">3D CRT</span>
       </div>
     </Frame>
   )
 }
-
 export function DemoSlide() {
   return (
     <Frame>
-      <div className="flex items-start justify-between gap-8">
-        <div>
-          <p className="text-sm text-emerald-500">先看效果，等一下再拆原理。</p>
-          <h3 className="text-foreground mt-3 text-4xl font-semibold">
-            Holographic control panel
-          </h3>
-        </div>
-        <Box className="size-16 shrink-0 text-emerald-500" strokeWidth={1} />
-      </div>
+      <p className="text-sm text-emerald-500">先操作，再拆原理。</p>
+      <h3 className="text-foreground text-4xl font-semibold">
+        Phosphor FM · 一台桌上的 CRT
+      </h3>
       <Cards
         items={[
           {
-            title: "操作投影",
-            body: "輸入站名、拖曳 signal power，按下 Transmit。這些都是原生 HTML 控制項。",
+            title: "移動視角",
+            body: "拖曳背景旋轉、滾輪縮放。觀察機殼厚度、底座和桌面陰影；用「正面」回到方便操作的視角。",
           },
           {
-            title: "切回 DOM",
-            body: "切換 Canvas / DOM，確認站名、開關、滑桿與訊號次數都還在。",
+            title: "操作螢幕",
+            body: "搜尋、切歌、播放合成樂段，拖曳音量與進度。轉到斜角後，再操作同一組 HTML 控制項。",
           },
           {
-            title: "換個角度",
-            body: "調色、關掉掃描線、改變 Y 軸角度。滑入或聚焦面板會暫停自動運動。",
+            title: "比較效果",
+            body: "關閉 CRT 效果，再打開掃描線、色偏與掃光。觀察表單狀態和音樂都持續保留。",
           },
         ]}
       />
       <a
-        href="/demos/html-in-canvas"
+        href="/demos/canvas-lab#crt"
         target="_blank"
         rel="noreferrer"
         className="inline-flex items-center gap-3 rounded-lg bg-emerald-500 px-6 py-4 text-lg font-medium text-black"
       >
-        開啟全息控制台 <ArrowUpRight className="size-5" />
+        開啟 3D CRT <ArrowUpRight className="size-5" />
       </a>
       <p className="text-sm text-secondary">
-        先確認右側顯示 NATIVE API ACTIVE。新分頁會保留 demo 的操作狀態。
+        確認 LIVE HTML / THREE.JS 標記。不支援時，會明確切回 DOM PREVIEW。
       </p>
     </Frame>
   )
 }
-
 export function ModelSlide() {
   return (
     <Frame>
       <h3 className="text-foreground text-3xl font-semibold">
-        HTML 負責介面，Canvas 決定畫在哪裡。
+        HTML 還是 HTML，畫面成為材質。
       </h3>
       <Cards
         items={[
           {
-            title: "DOM tree",
-            body: "React 管理站名、開關和滑桿。HTML 繼續提供表單語意、事件與焦點。",
+            title: "HTML + CSS",
+            body: "瀏覽器繼續處理排版、字型、表單、事件、焦點與無障礙語意。React 管理播放器 state。",
           },
           {
-            title: "Drawable subtree",
-            body: "Canvas 內標記 drawable 的子樹，成為可獨立繪製的來源。",
+            title: "原生 2D Canvas",
+            body: "drawElementImage() 把活的 DOM 子樹畫進來源 Canvas。內容改變時，paint 通知程式更新。",
           },
           {
-            title: "Canvas pixels",
-            body: "drawElementImage() 把來源畫進 2D context；DOM 改變時，paint 事件通知你重畫。",
+            title: "Three.js + shader",
+            body: "CanvasTexture 把來源 Canvas 當成螢幕材質。機殼、光影和相機由 Three.js 處理，shader 加上 CRT 效果。",
           },
         ]}
       />
       <p className="rounded-lg border-l-2 border-emerald-500 bg-emerald-500/5 px-6 py-4 text-xl leading-8 text-secondary">
-        畫面成為像素，互動仍由同一份 DOM 提供。
+        本 demo：HTML / CSS → 原生 2D Canvas → GPU 材質 → 3D 螢幕
       </p>
     </Frame>
   )
 }
-
-export function SetupSlide() {
-  return (
-    <div className="w-full space-y-6">
-      <h3 className="text-foreground text-2xl font-semibold">
-        兩個標記，建立繪製來源。
-      </h3>
-      <div className="rounded-lg border border-border bg-popover p-5">
-        <code className="text-lg text-emerald-500">content="drawable"</code>
-        <p className="mt-2 text-base leading-7 text-secondary">
-          讓 Canvas 排版其中的 DOM 子節點。
-        </p>
-      </div>
-      <div className="rounded-lg border border-border bg-popover p-5">
-        <code className="text-lg text-emerald-500">drawable</code>
-        <p className="mt-2 text-base leading-7 text-secondary">
-          指定獨立繪製的元素。本 demo 把整張面板當作一個來源。
-        </p>
-      </div>
-      <p className="text-sm leading-6 text-secondary">
-        若某個子元素也有 drawable，它會從父層的繪製來源中分離，需要另外畫出來。
-      </p>
-    </div>
-  )
-}
-
-export function PaintSlide() {
-  return (
-    <div className="w-full space-y-6">
-      <h3 className="text-foreground text-2xl font-semibold">
-        DOM 變了，再重畫。
-      </h3>
-      <ol className="list-decimal space-y-5 pl-5 text-lg leading-8 text-secondary">
-        <li>瀏覽器完成 drawable 子樹的樣式與排版更新。</li>
-        <li>
-          Canvas 收到 <code className="text-emerald-500">paint</code> 事件。
-        </li>
-        <li>清除舊畫面，繪製最新的 HTML，再加上掃描線。</li>
-      </ol>
-      <p className="rounded-lg border border-border bg-popover p-5 text-base leading-7 text-secondary">
-        本 demo 不靠每幀重繪驅動旋轉。DOM 繪製由 paint 事件驅動，外層 CSS
-        animation 負責 3D 姿態。
-      </p>
-    </div>
-  )
-}
-
-export function InteractionSlide() {
-  return (
-    <Frame>
-      <div className="flex items-center gap-4">
-        <MousePointer2 className="size-9 text-emerald-500" />
-        <h3 className="text-foreground text-3xl font-semibold">
-          看得到，還得點得到。
-        </h3>
-      </div>
-      <div className="grid grid-cols-2 gap-6">
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-7">
-          <p className="text-sm text-emerald-500">THIS DEMO / 2D</p>
-          <h4 className="text-foreground mt-4 text-2xl font-semibold">
-            瀏覽器自動同步
-          </h4>
-          <p className="mt-4 text-lg leading-8 text-secondary">
-            drawElementImage()
-            預設會同步元素的繪製位置、點擊命中範圍與無障礙邊界。
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-popover p-7">
-          <p className="text-sm text-secondary">WEBGL / WEBGPU</p>
-          <h4 className="text-foreground mt-4 text-2xl font-semibold">
-            開發者提供位置
-          </h4>
-          <p className="mt-4 text-lg leading-8 text-secondary">
-            GPU 可以任意映射材質，瀏覽器無法推斷位置。需要用
-            updateElementGeometry() 同步幾何變換。
-          </p>
-        </div>
-      </div>
-      <p className="text-lg text-secondary">
-        Demo 小挑戰：用 Tab 走進面板、修改站名，再用鍵盤調整滑桿。
-      </p>
-    </Frame>
-  )
-}
-
-export function IllusionSlide() {
-  return (
-    <div className="w-full space-y-6">
-      <h3 className="text-foreground text-2xl font-semibold">
-        全息感，拆成三層。
-      </h3>
-      <div className="space-y-4">
-        <p className="rounded-lg border border-border bg-popover p-4 text-base leading-7 text-secondary">
-          <strong className="text-foreground">HTML 面板</strong>
-          <br />
-          輸入框、switch、range、React state。
-        </p>
-        <p className="rounded-lg border border-border bg-popover p-4 text-base leading-7 text-secondary">
-          <strong className="text-foreground">2D Canvas</strong>
-          <br />
-          原生 HTML 繪製，加上細掃描線。
-        </p>
-        <p className="rounded-lg border border-border bg-popover p-4 text-base leading-7 text-secondary">
-          <strong className="text-foreground">CSS 空間</strong>
-          <br />
-          Perspective、rotateX / Y、後方兩片邊框和發光。
-        </p>
-      </div>
-      <p className="text-sm leading-6 text-secondary">
-        3D 外觀本來就能用 CSS 做。新 API 增加的是把可互動 HTML 納入 Canvas
-        繪製的能力。
-      </p>
-    </div>
-  )
-}
-
-export function BoundariesSlide() {
+export function CssSlide() {
   return (
     <Frame>
       <h3 className="text-foreground text-3xl font-semibold">
-        炫完之後，哪些事情不能省？
+        效果會從 container 自動繼承嗎？
       </h3>
       <Cards
         items={[
           {
-            title: "Feature detection",
-            body: "偵測 drawable Canvas、requestPaint 和 drawElementImage。缺少 API 或繪製失敗，就明確切回 DOM 預覽。",
+            title: "HTML 本身的 CSS",
+            body: "字型、顏色、排版、圓角和 hover 照原本規則運作，先決定播放器的樣子。",
           },
           {
-            title: "像素與座標",
-            body: "Canvas backing size 要跟實體像素對齊。用 ResizeObserver 處理尺寸，避免高 DPI 螢幕上的文字模糊。",
+            title: "Canvas 外層的 CSS",
+            body: "外層的 transform、filter 作用在整個輸出畫面；這是合成效果，不是每個子元素繼承。",
           },
           {
-            title: "操作與動態效果",
-            body: "保留 label、鍵盤操作與狀態回饋。聚焦時穩定面板，並尊重 prefers-reduced-motion。",
+            title: "3D 材質與 shader",
+            body: "透視、掃描線、RGB 色偏和掃光由繪製程式決定。HTML 放進 Canvas 不會自動得到這些效果。",
           },
         ]}
       />
-      <p className="text-lg leading-8 text-secondary">
-        適合遊戲內 UI、設計工具與 GPU 效果。一般表單若沒有特殊繪製需求，直接用
-        DOM 就好。
+      <p className="text-xl leading-9 text-secondary">
+        CSS 決定 UI 長相；3D 與 shader 決定怎麼呈現。
       </p>
     </Frame>
   )
 }
-
-const sources = [
-  {
-    title: "HTML-in-Canvas overview",
-    url: "https://developer.chrome.com/docs/web-platform/html-in-canvas",
-  },
-  {
-    title: "Render HTML into 2D canvas",
-    url: "https://developer.chrome.com/docs/web-platform/html-in-canvas/2d",
-  },
-  {
-    title: "Technical concepts / geometry / accessibility",
-    url: "https://developer.chrome.com/docs/web-platform/html-in-canvas/concepts",
-  },
-]
-
+export function SetupSlide() {
+  return (
+    <div className="w-full space-y-6">
+      <h3 className="text-foreground text-2xl font-semibold">
+        兩層 Canvas，各自負責一件事。
+      </h3>
+      <div className="rounded-lg border border-border bg-popover p-5">
+        <code className="text-emerald-500">content="drawable"</code>
+        <p className="mt-2 text-base leading-7 text-secondary">
+          讓瀏覽器排版 Canvas 裡的 DOM 子節點。
+        </p>
+      </div>
+      <div className="rounded-lg border border-border bg-popover p-5">
+        <code className="text-emerald-500">drawable</code>
+        <p className="mt-2 text-base leading-7 text-secondary">
+          標記獨立繪製來源。內層畫播放器，外層呈現 3D 場景。
+        </p>
+      </div>
+      <p className="text-sm leading-7 text-secondary">
+        內層來源 Canvas 是外層的 drawable 子樹；同步它的幾何位置，裡面的 HTML
+        互動也能跟著走。
+      </p>
+    </div>
+  )
+}
+export function PaintSlide() {
+  return (
+    <div className="w-full space-y-6">
+      <h3 className="text-foreground text-2xl font-semibold">
+        內容更新與場景動畫，分開處理。
+      </h3>
+      <ol className="list-decimal space-y-5 pl-5 text-lg leading-8 text-secondary">
+        <li>HTML 改變，來源 Canvas 收到 paint。</li>
+        <li>drawElementImage() 更新影像，標記材質需要重新上傳。</li>
+        <li>Three.js 的動畫迴圈更新相機、互動幾何與 shader，再繪製場景。</li>
+      </ol>
+      <p className="rounded-lg border border-border bg-popover p-5 text-base leading-7 text-secondary">
+        滑動視角不需要重新排版播放器。掃光由 shader 的時間參數驅動；reduced
+        motion 會停用持續動態效果。
+      </p>
+    </div>
+  )
+}
+export function InteractionSlide() {
+  return (
+    <Frame>
+      <h3 className="text-foreground text-3xl font-semibold">
+        轉個角度，為什麼還點得到？
+      </h3>
+      <Cards
+        items={[
+          {
+            title: "影像的位置",
+            body: "相機與螢幕的 3D 變換決定材質最後投影在哪裡。瀏覽器無法從任意 shader 自行推斷。",
+          },
+          {
+            title: "互動的位置",
+            body: "相機變動時同步 HTML 基準投影；游標用 Raycaster 取得曲面 UV，再轉回 HTML 座標，讓點擊跟著凸面走。",
+          },
+          {
+            title: "手勢的歸屬",
+            body: "從螢幕內開始的手勢交給 HTML；背景拖曳才交給 OrbitControls，避免拖音量時也轉動相機。",
+          },
+        ]}
+      />
+      <p className="rounded-lg border-l-2 border-emerald-500 bg-emerald-500/5 px-6 py-4 text-xl leading-8 text-secondary">
+        平面螢幕的透視能用矩陣描述；任意曲面、波浪扭曲需要額外映射。
+      </p>
+    </Frame>
+  )
+}
+export function IllusionSlide() {
+  return (
+    <div className="w-full space-y-5">
+      <h3 className="text-foreground text-2xl font-semibold">
+        一台 CRT，三種工作。
+      </h3>
+      {[
+        [
+          "HTML / CSS",
+          "Base UI Autocomplete 搜尋選單、按鈕、滑桿與開關；選單留在 Canvas 子樹內，跟著曲面顯示。",
+        ],
+        [
+          "Three.js",
+          "機殼、底座、平面桌面、燈光、陰影、螢幕材質與 OrbitControls。",
+        ],
+        [
+          "Shader / Web Audio",
+          "shader 加掃描線、RGB 色偏與掃光；Web Audio 合成三段可播放音樂。",
+        ],
+      ].map(([title, body]) => (
+        <div
+          key={title}
+          className="rounded-lg border border-border bg-popover p-5"
+        >
+          <strong className="text-emerald-500">{title}</strong>
+          <p className="mt-2 text-base leading-7 text-secondary">{body}</p>
+        </div>
+      ))}
+      <p className="text-sm leading-7 text-secondary">
+        HTML 材質和玻璃使用相同凸面網格；Raycaster 將曲面 UV 換回 HTML
+        互動座標。shader 處理外圍模糊與色散；波形是節奏示意。
+      </p>
+    </div>
+  )
+}
+export function BoundariesSlide() {
+  return (
+    <Frame>
+      <h3 className="text-foreground text-3xl font-semibold">
+        能畫出來，還要能好好使用。
+      </h3>
+      <Cards
+        items={[
+          {
+            title: "支援與 fallback",
+            body: "偵測原生繪製與幾何 API。WebGL 或繪製失敗，就明確切回可操作的 HTML 播放器。",
+          },
+          {
+            title: "清晰度與位置",
+            body: "來源影像使用較高解析度。視窗改變時更新相機比例與投影矩陣，維持畫面和互動位置一致。",
+          },
+          {
+            title: "控制與生命週期",
+            body: "Base UI 提供 Tab、Enter / Space、方向鍵與 Home / End 操作。停用持續動態時仍可操作；離開時釋放 GPU 與音訊資源。",
+          },
+        ]}
+      />
+      <p className="text-lg leading-8 text-secondary">
+        HTML-in-Canvas 提供原生 UI
+        與繪製的橋樑；場景、特效和互動幾何仍由開發者負責。
+      </p>
+    </Frame>
+  )
+}
 export function ClosingSlide() {
   return (
     <Frame>
@@ -298,23 +281,36 @@ export function ClosingSlide() {
       <h3 className="text-foreground text-4xl leading-tight font-semibold">
         如果 HTML 可以成為即時材質，
         <br />
-        你會拿它做什麼？
+        你會把它放在哪裡？
       </h3>
       <p className="text-xl leading-9 text-secondary">
-        今天用 2D Canvas 加 CSS perspective。
+        遊戲內終端機、3D 產品螢幕、空間工作台。
         <br />
-        下一步可以探索 WebGL / WebGPU 材質、shader，以及它們的互動座標同步。
+        先保留熟悉的 HTML 控制，再設計新的呈現方式。
       </p>
       <div className="space-y-3 border-t border-border pt-6">
-        {sources.map((source) => (
+        {[
+          [
+            "HTML-in-Canvas overview",
+            "https://developer.chrome.com/docs/web-platform/html-in-canvas",
+          ],
+          [
+            "Technical concepts / interaction geometry",
+            "https://developer.chrome.com/docs/web-platform/html-in-canvas/concepts",
+          ],
+          [
+            "Three.js CanvasTexture",
+            "https://threejs.org/docs/pages/CanvasTexture.html",
+          ],
+        ].map(([title, url]) => (
           <a
-            key={source.url}
-            href={source.url}
+            key={url}
+            href={url}
             target="_blank"
             rel="noreferrer"
             className="flex w-fit items-center gap-2 text-sm text-secondary hover:text-emerald-500"
           >
-            {source.title}
+            {title}
             <ArrowUpRight className="size-3" />
           </a>
         ))}

@@ -47,6 +47,20 @@ export default function HomePage() {
           ))}
         </FallingBlocks.Root>
         <Link
+          href="/demos/canvas-lab"
+          className="bg-card mt-6 block rounded-lg border border-border p-5 transition-colors hover:border-emerald-400"
+        >
+          <p className="text-muted-foreground mb-2 text-xs tracking-widest">
+            HTML-IN-CANVAS / THREE.JS
+          </p>
+          <h2 className="text-foreground text-xl font-semibold">
+            Phosphor FM · 3D CRT player ↗
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            轉動桌上 CRT 的視角，操作螢幕裡真正的 HTML 播放器。
+          </p>
+        </Link>
+        <Link
           href="/demos/html-in-canvas"
           className="bg-card mt-6 block rounded-lg border border-border p-5 transition-colors hover:border-emerald-400"
         >

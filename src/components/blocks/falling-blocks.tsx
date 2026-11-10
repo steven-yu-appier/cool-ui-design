@@ -293,7 +293,7 @@ export function useFallingBlocks() {
   return useContext(FallingBlocksContext)
 }
 
-export interface FallingBlocksRootProps extends React.ComponentProps<"div"> {
+interface FallingBlocksRootProps extends React.ComponentProps<"div"> {
   runId?: number | string
   count?: number
 }
@@ -523,7 +523,7 @@ function Root({
   )
 }
 
-export interface FallingBlocksItemProps extends React.ComponentProps<"div"> {
+interface FallingBlocksItemProps extends React.ComponentProps<"div"> {
   physicsIndex?: number
   asChild?: boolean
 }
@@ -588,7 +588,7 @@ function Item({
   )
 }
 
-export type FallingBlocksPlayButtonProps = React.ComponentProps<typeof Button>
+type FallingBlocksPlayButtonProps = React.ComponentProps<typeof Button>
 
 function PlayButton({ onClick, ...props }: FallingBlocksPlayButtonProps) {
   const { triggerReplay } = React.use(FallingBlocksContext)

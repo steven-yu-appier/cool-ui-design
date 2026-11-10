@@ -2,6 +2,7 @@ import type { SharingConfig } from "../types"
 import {
   BoundariesSlide,
   ClosingSlide,
+  CssSlide,
   DemoSlide,
   IllusionSlide,
   InteractionSlide,
@@ -15,8 +16,8 @@ export const htmlInCanvasSharing: SharingConfig = {
   id: "04-html-in-canvas",
   title: "Beyond the DOM: HTML-in-Canvas",
   description:
-    "把可互動的 HTML 投射進 Canvas，從全息控制台拆解繪製、事件與 3D 視角。",
-  date: "2026-11-09",
+    "把原生 HTML 播放器放進 Three.js CRT，拆解材質、shader 與移動視角後的互動座標。",
+  date: "2026-11-10",
   slides: [
     { id: "title", title: "HTML-in-Canvas", demo: () => <TitleSlide /> },
     { id: "demo", title: "先玩，再拆", demo: () => <DemoSlide /> },
@@ -26,18 +27,23 @@ export const htmlInCanvasSharing: SharingConfig = {
       demo: () => <ModelSlide />,
     },
     {
+      id: "css-and-effects",
+      title: "CSS 和 Canvas 各負責什麼？",
+      demo: () => <CssSlide />,
+    },
+    {
       id: "drawable",
       title: "讓 HTML 成為繪製來源",
       demo: () => <SetupSlide />,
       lang: "html",
-      code: `<canvas id="projection" content="drawable">
-  <div id="panel" drawable>
-    <form>
-      <label for="station">Station name</label>
-      <input id="station" value="Aurora station" />
-      <button type="submit">Transmit</button>
-    </form>
-  </div>
+      code: `<canvas id="scene" content="drawable">
+  <canvas id="source" content="drawable" drawable>
+    <div id="player" drawable>
+      <label>Search <input type="search" /></label>
+      <button>Play</button>
+      <label>Volume <input type="range" /></label>
+    </div>
+  </canvas>
 </canvas>`,
     },
     {
@@ -45,22 +51,20 @@ export const htmlInCanvasSharing: SharingConfig = {
       title: "繪製生命週期",
       demo: () => <PaintSlide />,
       lang: "ts",
-      code: `const ctx = canvas.getContext("2d");
+      code: `const texture = new THREE.CanvasTexture(source);
 
-canvas.addEventListener("paint", () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawElementImage(
-    panel, 0, 0,
-    canvas.width, canvas.height
-  );
-  drawScanlines(ctx);
+source.addEventListener("paint", () => {
+  ctx.drawElementImage(player, 0, 0, 1280, 1280);
+  texture.needsUpdate = true;
 });
 
-// First paint, even before the DOM changes.
-canvas.requestPaint();
+renderer.setAnimationLoop((time) => {
+  syncScreenGeometry();
+  material.uniforms.u_time.value = time / 1000;
+  renderer.render(scene, camera);
+});
 
-// In React: remove the listener on cleanup.
-// See use-html-canvas.ts for resizing and fallback.`,
+source.requestPaint();`,
     },
     {
       id: "interaction",
@@ -68,27 +72,28 @@ canvas.requestPaint();
       demo: () => <InteractionSlide />,
     },
     {
-      id: "hologram",
-      title: "拆解全息控制台",
+      id: "demo-effects",
+      title: "拆解 3D CRT",
       demo: () => <IllusionSlide />,
-      lang: "css",
-      code: `.stage {
-  perspective: 1200px;
-}
+      lang: "ts",
+      code: `// HTML pixel coordinates → screen local → world
+// → camera projection → canvas CSS pixels.
+const matrix = viewport
+  .clone()
+  .multiply(camera.projectionMatrix)
+  .multiply(camera.matrixWorldInverse)
+  .multiply(screen.matrixWorld)
+  .multiply(pixelToLocal);
 
-.scene {
-  transform-style: preserve-3d;
-  transform: rotateX(7deg) rotateY(-14deg);
-}
+canvas.updateElementGeometry(source, {
+  canvasTransform: new DOMMatrix(matrix.elements),
+});
 
-.back-layer {
-  transform: translateZ(-32px);
-}
-
-.scene:hover,
-.scene:focus-within {
-  animation-play-state: paused;
-}`,
+// Curved screen: raycast the actual mesh for pointer input.
+raycaster.setFromCamera(pointerNDC, camera);
+const hit = raycaster.intersectObject(screen)[0];
+// hit.uv → HTML layout coordinates → Base UI pointer event.
+// Keyboard events continue through the focused DOM control.`,
     },
     {
       id: "boundaries",

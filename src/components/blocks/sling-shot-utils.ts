@@ -27,7 +27,7 @@ function hasDisplacedPosition(position: Vector) {
   return position.x !== 0 || position.y !== 0
 }
 
-export function composeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
+function composeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
   return (node: T | null) => {
     const cleanups: (() => void)[] = []
 

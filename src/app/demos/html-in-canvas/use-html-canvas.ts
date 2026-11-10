@@ -15,7 +15,7 @@ type HtmlContext = CanvasRenderingContext2D & {
 
 const subscribe = () => () => {}
 
-function supportsHtmlCanvas() {
+export function supportsHtmlCanvas() {
   const canvas = document.createElement("canvas") as HtmlCanvas
   canvas.setAttribute("content", "drawable")
   return (

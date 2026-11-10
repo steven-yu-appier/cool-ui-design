@@ -28,7 +28,7 @@ interface Point extends Vector {
 
 type SlotName = "arrow" | "goal" | "item" | "power" | "preview"
 
-export interface SlingShotConfig {
+interface SlingShotConfig {
   bounce?: number
   friction?: number
   gravity?: number
@@ -42,7 +42,7 @@ export interface SlingShotConfig {
   startDragDistance?: number
 }
 
-export interface SlingShotLandEvent {
+interface SlingShotLandEvent {
   itemElement: HTMLElement
   itemId: string
   itemRect: DOMRect
@@ -50,7 +50,7 @@ export interface SlingShotLandEvent {
   velocity: Vector
 }
 
-export interface SlingShotHitEvent {
+interface SlingShotHitEvent {
   goalElement: HTMLElement
   goalId: string
   goalRect: DOMRect
@@ -60,13 +60,13 @@ export interface SlingShotHitEvent {
   velocity: Vector
 }
 
-export interface SlingShotGoalState {
+interface SlingShotGoalState {
   hitCount: number
   isHit: boolean
   lastHit: SlingShotHitEvent | null
 }
 
-export interface SlingShotState {
+interface SlingShotState {
   aimAngle: number
   isAiming: boolean
   isFlying: boolean
@@ -78,7 +78,7 @@ export interface SlingShotState {
   velocity: Vector
 }
 
-export interface SlingShotProps extends React.ComponentProps<"div"> {
+interface SlingShotProps extends React.ComponentProps<"div"> {
   boundsRef?: React.RefObject<HTMLElement | null>
   config?: SlingShotConfig
   disabled?: boolean
@@ -1158,7 +1158,7 @@ function SlingShotRoot({
 
 // ─── SlingShotSlot ────────────────────────────────────────────────────────────
 
-export interface SlingShotSlotProps extends React.ComponentProps<"div"> {
+interface SlingShotSlotProps extends React.ComponentProps<"div"> {
   render?: (props: SlingShotState) => React.ReactNode
 }
 
@@ -1174,7 +1174,7 @@ function SlingShotSlot({ render, children, ...props }: SlingShotSlotProps) {
 
 // ─── SlingShotItem ────────────────────────────────────────────────────────────
 
-export interface SlingShotItemProps extends SlingShotSlotProps {
+interface SlingShotItemProps extends SlingShotSlotProps {
   id?: string
 }
 
@@ -1241,7 +1241,7 @@ function SlingShotItem({
 
 // ─── SlingShotGoal ────────────────────────────────────────────────────────────
 
-export interface SlingShotGoalProps extends React.ComponentProps<"div"> {
+interface SlingShotGoalProps extends React.ComponentProps<"div"> {
   render?: (props: SlingShotGoalState) => React.ReactNode
   hitTest?: (event: SlingShotHitEvent) => boolean
   onHit?: (event: SlingShotHitEvent) => void
@@ -1440,7 +1440,7 @@ function SlingShotArrow({
 
 // ─── SlingShotPreview ─────────────────────────────────────────────────────────
 
-export interface SlingShotPreviewProps extends SlingShotSlotProps {
+interface SlingShotPreviewProps extends SlingShotSlotProps {
   dotClassName?: string
 }
 
