@@ -4,10 +4,8 @@ import { useCallback, useState } from "react"
 import { Button } from "@base-ui/react/button"
 import { Field } from "@base-ui/react/field"
 import { Autocomplete } from "@base-ui/react/autocomplete"
-import { Checkbox } from "@base-ui/react/checkbox"
 import { PlayerSlider } from "./player-slider"
 import {
-  Check,
   Music2,
   Pause,
   Play,
@@ -34,8 +32,6 @@ export function CrtDemo() {
   const [query, setQuery] = useState("")
   const [searchOpen, setSearchOpen] = useState(false)
   const [mode, setMode] = useState<"3d" | "html">("3d")
-  const [effects, setEffects] = useState(true)
-  const [strength, setStrength] = useState(0.65)
   const [error, setError] = useState("")
   const reportError = useCallback((message: string) => setError(message), [])
   const {
@@ -45,7 +41,12 @@ export function CrtDemo() {
     panelRef,
     sceneControls,
     signalGlitch,
-  } = useCrtScene(!error && mode === "3d", effects, strength, reportError)
+  } = useCrtScene(!error && mode === "3d", reportError, (action) => {
+    if (action === "play" && !player.playing) player.toggle()
+    else if (action === "pause" && player.playing) player.toggle()
+    else if (action === "previous") select(player.index - 1)
+    else if (action === "next") select(player.index + 1)
+  })
   const native = supported && !error && mode === "3d"
   function select(index: number) {
     signalGlitch()
@@ -247,34 +248,9 @@ export function CrtDemo() {
           </div>
         </div>
       ) : (
-        <div className={`crt-fallback ${effects ? "effects-on" : ""}`}>
-          {panel}
-        </div>
+        <div className="crt-fallback effects-on">{panel}</div>
       )}
       <div className="player-settings">
-        <label>
-          <Checkbox.Root
-            className="effects-checkbox"
-            checked={effects}
-            onCheckedChange={setEffects}
-          >
-            <Checkbox.Indicator>
-              <Check size={12} />
-            </Checkbox.Indicator>
-          </Checkbox.Root>
-          CRT 效果
-        </label>
-        <div className="strength-setting">
-          <span>訊號失真</span>
-          <PlayerSlider
-            label="訊號失真強度"
-            value={strength}
-            max={1}
-            step={0.05}
-            disabled={!effects || !native}
-            onValueChange={setStrength}
-          />
-        </div>
         <span role="status">
           {player.error ||
             (player.playing

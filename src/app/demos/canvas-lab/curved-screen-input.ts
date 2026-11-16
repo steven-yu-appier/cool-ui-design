@@ -4,7 +4,7 @@ import * as THREE from "three"
 export function connectCurvedScreenInput(
   canvas: HTMLCanvasElement,
   panel: HTMLElement,
-  screen: THREE.Mesh<THREE.PlaneGeometry>,
+  screen: THREE.Mesh<THREE.BufferGeometry>,
   camera: THREE.PerspectiveCamera
 ) {
   const raycaster = new THREE.Raycaster()
@@ -23,12 +23,19 @@ export function connectCurvedScreenInput(
       1 - ((event.clientY - bounds.top) / bounds.height) * 2
     )
     raycaster.setFromCamera(pointer, camera)
+    if (!screen.visible) return null
     const hit = raycaster.intersectObject(screen, false)[0]
     if (hit?.uv) {
       const x = Math.abs(hit.uv.x * 2 - 1)
       const y = Math.abs(hit.uv.y * 2 - 1)
       if (!allowOutside && x ** 6 + y ** 6 > 1) return null
-      local.set((hit.uv.x - 0.5) * 4.5, (hit.uv.y - 0.5) * 4.25, 0)
+      if (!screen.geometry.boundingBox) screen.geometry.computeBoundingBox()
+      const bounds = screen.geometry.boundingBox!
+      local.set(
+        THREE.MathUtils.lerp(bounds.min.x, bounds.max.x, hit.uv.x),
+        THREE.MathUtils.lerp(bounds.min.y, bounds.max.y, hit.uv.y),
+        0
+      )
     } else {
       if (!allowOutside) return null
       flatNormal.set(0, 0, 1).transformDirection(screen.matrixWorld)

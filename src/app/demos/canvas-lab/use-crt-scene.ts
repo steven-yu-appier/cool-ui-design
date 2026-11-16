@@ -1,9 +1,15 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react"
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useSyncExternalStore,
+} from "react"
 import * as THREE from "three"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js"
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import { connectCurvedScreenInput } from "./curved-screen-input"
 import { supportsHtmlCanvas } from "../html-in-canvas/use-html-canvas"
 
@@ -28,10 +34,10 @@ const subscribe = () => () => {}
 
 export function useCrtScene(
   enabled: boolean,
-  effects: boolean,
-  strength: number,
-  onError: (message: string) => void
+  onError: (message: string) => void,
+  onHardwareAction: (action: "play" | "pause" | "previous" | "next") => void
 ) {
+  const hardwareAction = useEffectEvent(onHardwareAction)
   const supported = useSyncExternalStore(
     subscribe,
     supportsHtmlCanvas,
@@ -42,8 +48,6 @@ export function useCrtScene(
   const panelRef = useRef<HTMLDivElement>(null)
   const sceneControls = useRef<{ reset(): void; front(): void } | null>(null)
   const settings = useRef({
-    effects: true,
-    strength: 0.65,
     glitchUntil: 0,
     pendingGlitch: false,
   })
@@ -51,11 +55,6 @@ export function useCrtScene(
   const signalGlitch = useCallback(() => {
     settings.current.pendingGlitch = true
   }, [])
-  useEffect(() => {
-    settings.current.effects = effects
-    settings.current.strength = strength
-    ;(sourceRef.current as DrawableCanvas | null)?.requestPaint()
-  }, [effects, strength])
 
   useEffect(() => {
     if (!enabled || !supported) return
@@ -147,63 +146,6 @@ export function useCrtScene(
     desk.rotation.x = -Math.PI / 2
     desk.receiveShadow = true
     scene.add(desk)
-    function box(
-      w: number,
-      h: number,
-      d: number,
-      radius: number,
-      color: number,
-      x: number,
-      y: number,
-      z: number
-    ) {
-      const material = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.6,
-        metalness: 0.12,
-      })
-      const mesh = new THREE.Mesh(
-        new RoundedBoxGeometry(w, h, d, 4, radius),
-        material
-      )
-      mesh.position.set(x, y, z)
-      mesh.castShadow = mesh.receiveShadow = true
-      scene.add(mesh)
-      return mesh
-    }
-    box(5.45, 5.1, 3.25, 0.3, 0x252c29, 0, 3.05, -0.15)
-    box(5.25, 4.95, 0.38, 0.3, 0x111815, 0, 3.1, 1.5)
-    box(4.8, 4.48, 0.18, 0.3, 0x030b06, 0, 3.2, 1.73)
-    box(2.5, 0.25, 1.95, 0.1, 0x242c27, 0, 0.2, 0)
-    box(1.25, 0.55, 1, 0.1, 0x202923, 0, 0.53, -0.15)
-    for (let i = 0; i < 9; i++)
-      box(
-        0.025,
-        0.7,
-        0.05,
-        0.008,
-        0x0c100e,
-        -2.73,
-        3.1,
-        -1.25 + i * 0.22
-      ).rotation.y = Math.PI / 2
-    const led = new THREE.Mesh(
-      new THREE.SphereGeometry(0.035),
-      new THREE.MeshBasicMaterial({ color: 0x8eff68 })
-    )
-    led.position.set(1.94, 0.89, 1.72)
-    scene.add(led)
-    const button = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.12, 0.07, 24),
-      new THREE.MeshStandardMaterial({
-        color: 0x4a554a,
-        metalness: 0.4,
-        roughness: 0.5,
-      })
-    )
-    button.rotation.x = Math.PI / 2
-    button.position.set(2.25, 0.9, 1.75)
-    scene.add(button)
     const glow = new THREE.PointLight(0x50ff74, 5, 7, 2)
     glow.position.set(0, 2.4, 2.6)
     scene.add(glow)
@@ -254,16 +196,9 @@ export function useCrtScene(
           #include <colorspace_fragment>
         }`,
     })
-    const screenGeometry = new THREE.PlaneGeometry(4.5, 4.25, 64, 64)
-    const vertices = screenGeometry.attributes.position
-    for (let i = 0; i < vertices.count; i++) {
-      const x = vertices.getX(i) / 2.25
-      const y = vertices.getY(i) / 2.125
-      vertices.setZ(i, 0.42 * (1 - x * x) * (1 - y * y))
-    }
-    screenGeometry.computeVertexNormals()
+    const screenGeometry = new THREE.BufferGeometry()
     const screen = new THREE.Mesh(screenGeometry, material)
-    screen.position.set(0, 3.2, 1.835)
+    screen.visible = false
     scene.add(screen)
     const disconnectScreenInput = connectCurvedScreenInput(
       canvas,
@@ -298,10 +233,10 @@ export function useCrtScene(
         }`,
     })
     const glass = new THREE.Mesh(glassGeometry, glassMaterial)
-    glass.position.copy(screen.position)
-    glass.position.z += 0.012
+    glass.visible = false
     scene.add(glass)
 
+    let disposed = false
     let dirty = true
     let failed = false
     function paint() {
@@ -330,31 +265,227 @@ export function useCrtScene(
       dirty = true
     })
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const pixelToLocal = new THREE.Matrix4().set(
-      4.5 / 640,
-      0,
-      0,
-      -2.25,
-      0,
-      -4.25 / 640,
-      0,
-      2.125,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      1
+    const pixelToLocal = new THREE.Matrix4()
+    const hardwareButtons = new Map<
+      THREE.Object3D,
+      {
+        action: "play" | "pause" | "previous" | "next"
+        label: string
+      }
+    >()
+    const presses = new Map<THREE.Object3D, { z: number; start: number }>()
+    const raycaster = new THREE.Raycaster()
+    const pointer = new THREE.Vector2()
+    let hardwareModel: THREE.Group | null = null
+    let buttonGesture: {
+      id: number
+      x: number
+      y: number
+      button: THREE.Object3D
+    } | null = null
+    function pickButton(event: PointerEvent) {
+      if (!hardwareModel) return null
+      const bounds = canvas!.getBoundingClientRect()
+      pointer.set(
+        ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
+        1 - ((event.clientY - bounds.top) / bounds.height) * 2
+      )
+      raycaster.setFromCamera(pointer, camera)
+      const hit = raycaster
+        .intersectObject(hardwareModel, true)
+        .find(({ object }) => {
+          for (
+            let node: THREE.Object3D | null = object;
+            node;
+            node = node.parent
+          )
+            if (!node.visible) return false
+          return true
+        })
+      return hit && hardwareButtons.has(hit.object) ? hit.object : null
+    }
+    function hardwareDown(event: PointerEvent) {
+      if (!event.isPrimary || event.button !== 0) return
+      const button = pickButton(event)
+      if (!button) return
+      buttonGesture = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        button,
+      }
+      controls.enabled = false
+      canvas!.setPointerCapture(event.pointerId)
+      event.stopImmediatePropagation()
+    }
+    function hardwareUp(event: PointerEvent) {
+      if (buttonGesture?.id !== event.pointerId) return
+      const { x, y, button } = buttonGesture
+      buttonGesture = null
+      controls.enabled = true
+      if (canvas!.hasPointerCapture(event.pointerId))
+        canvas!.releasePointerCapture(event.pointerId)
+      event.stopImmediatePropagation()
+      if (
+        Math.hypot(event.clientX - x, event.clientY - y) > 6 ||
+        pickButton(event) !== button
+      )
+        return
+      const binding = hardwareButtons.get(button)!
+      presses.set(button, {
+        z: presses.get(button)?.z ?? button.position.z,
+        start: performance.now(),
+      })
+      dirty = true
+      hardwareAction(binding.action)
+    }
+    function hardwareCancel() {
+      if (!buttonGesture) return
+      buttonGesture = null
+      controls.enabled = true
+    }
+    function hardwareHover(event: PointerEvent) {
+      if (event.buttons) return
+      const button = pickButton(event)
+      canvas!.style.cursor = button ? "pointer" : ""
+      canvas!.title = button ? hardwareButtons.get(button)!.label : ""
+    }
+    canvas.addEventListener("pointerdown", hardwareDown, true)
+    canvas.addEventListener("pointerup", hardwareUp, true)
+    canvas.addEventListener("pointercancel", hardwareCancel, true)
+    canvas.addEventListener("lostpointercapture", hardwareCancel)
+    canvas.addEventListener("pointermove", hardwareHover)
+
+    function disposeModel(root: THREE.Object3D) {
+      const geometries = new Set<THREE.BufferGeometry>()
+      const materials = new Set<THREE.Material>()
+      const textures = new Set<THREE.Texture>()
+      root.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return
+        geometries.add(object.geometry)
+        for (const item of Array.isArray(object.material)
+          ? object.material
+          : [object.material]) {
+          materials.add(item)
+          for (const value of Object.values(item)) {
+            if (value instanceof THREE.Texture) textures.add(value)
+          }
+        }
+      })
+      geometries.forEach((item) => item.dispose())
+      materials.forEach((item) => item.dispose())
+      textures.forEach((item) => item.dispose())
+    }
+    new GLTFLoader().load(
+      "/models/rea-felix-room/tv.glb",
+      ({ scene: model }) => {
+        if (disposed) {
+          disposeModel(model)
+          return
+        }
+        const modelScreen = model.getObjectByName("screen")
+        if (!(modelScreen instanceof THREE.Mesh)) {
+          disposeModel(model)
+          onError("TV 模型缺少螢幕，已切回 HTML 播放器。")
+          return
+        }
+        // The loose cassette is separate from the TV/VCR hardware.
+        const hardware = new THREE.Box3()
+        for (const child of model.children) {
+          if (child.name.startsWith("tape_")) child.visible = false
+          else hardware.expandByObject(child, true)
+        }
+        const center = hardware.getCenter(new THREE.Vector3())
+        const scale = 6 / hardware.getSize(new THREE.Vector3()).y
+        model.scale.setScalar(scale)
+        model.position.set(
+          -center.x * scale,
+          -hardware.min.y * scale,
+          -center.z * scale
+        )
+        model.updateMatrixWorld(true)
+        model.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = object.receiveShadow = true
+          }
+        })
+        hardwareModel = model
+        const bindings = [
+          { action: "play", label: "播放" },
+          { action: "pause", label: "暫停" },
+          { action: "previous", label: "上一首" },
+          { action: "next", label: "下一首" },
+        ] as const
+        bindings.forEach((binding, index) => {
+          for (const name of [`btn_${index}`, `vcr_btn_${index}`]) {
+            const button = model.getObjectByName(name)
+            if (button) hardwareButtons.set(button, binding)
+          }
+        })
+        scene.add(model)
+        const geometry = modelScreen.geometry.clone()
+        geometry.applyMatrix4(modelScreen.matrixWorld)
+        geometry.computeBoundingBox()
+        const bounds = geometry.boundingBox!
+        const size = bounds.getSize(new THREE.Vector3())
+        const origin = bounds.getCenter(new THREE.Vector3())
+        origin.z = bounds.min.z + 0.005
+        geometry.translate(-origin.x, -origin.y, -origin.z)
+        // The glTF uses top-down UVs; our canvas shader uses bottom-up UVs.
+        const uv = geometry.attributes.uv
+        for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i))
+        uv.needsUpdate = true
+        screen.geometry.dispose()
+        screen.geometry = geometry
+        screen.position.copy(origin)
+        screen.visible = true
+        modelScreen.visible = false
+        glass.geometry.dispose()
+        glass.geometry = geometry.clone()
+        glass.position.copy(origin)
+        glass.position.z += 0.012
+        glass.visible = true
+        pixelToLocal.set(
+          size.x / source.clientWidth,
+          0,
+          0,
+          -size.x / 2,
+          0,
+          -size.y / source.clientHeight,
+          0,
+          size.y / 2,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        )
+        glow.position.copy(origin).add(new THREE.Vector3(0, 0, 1))
+        dirty = true
+        source.requestPaint()
+      },
+      undefined,
+      () => {
+        if (!disposed) onError("TV 模型載入失敗，已切回 HTML 播放器。")
+      }
     )
     const transform = new THREE.Matrix4()
     const viewport = new THREE.Matrix4()
     renderer.setAnimationLoop((time) => {
       if (failed || document.hidden) return
-      if (!dirty && (motion.matches || !settings.current.effects)) return
+      if (!dirty && motion.matches && presses.size === 0) return
       dirty = false
       try {
+        for (const [button, press] of presses) {
+          const progress = Math.min(1, (time - press.start) / 160)
+          button.position.z =
+            press.z -
+            (motion.matches ? 0 : Math.sin(progress * Math.PI) * 0.0024)
+          if (progress === 1) presses.delete(button)
+        }
         scene.updateMatrixWorld()
         camera.updateMatrixWorld()
         viewport.set(
@@ -389,15 +520,10 @@ export function useCrtScene(
           settings.current.pendingGlitch = false
         }
         material.uniforms.u_time.value = motion.matches ? 0 : time / 1000
-        material.uniforms.u_strength.value = settings.current.effects
-          ? settings.current.strength
-          : 0
+        material.uniforms.u_strength.value = 0.65
         material.uniforms.u_glitch.value =
           !motion.matches && time / 1000 < settings.current.glitchUntil ? 1 : 0
-        glassMaterial.uniforms.u_strength.value = settings.current.effects
-          ? settings.current.strength
-          : 0
-        glow.intensity = settings.current.effects ? 5 : 2
+        glassMaterial.uniforms.u_strength.value = 0.65
         renderer.render(scene, camera)
       } catch (error) {
         failed = true
@@ -414,8 +540,16 @@ export function useCrtScene(
     }
     canvas.addEventListener("webglcontextlost", lost)
     return () => {
+      disposed = true
       renderer.setAnimationLoop(null)
       disconnectScreenInput()
+      canvas.removeEventListener("pointerdown", hardwareDown, true)
+      canvas.removeEventListener("pointerup", hardwareUp, true)
+      canvas.removeEventListener("pointercancel", hardwareCancel, true)
+      canvas.removeEventListener("lostpointercapture", hardwareCancel)
+      canvas.removeEventListener("pointermove", hardwareHover)
+      canvas.style.cursor = ""
+      canvas.removeAttribute("title")
       observer.disconnect()
       source.removeEventListener("paint", paint)
       source.removeEventListener("pointerdown", beginScreenGesture)
@@ -426,15 +560,7 @@ export function useCrtScene(
       canvas.clearElementGeometry(source)
       controls.dispose()
       sceneControls.current = null
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose()
-          const materials = Array.isArray(object.material)
-            ? object.material
-            : [object.material]
-          materials.forEach((item) => item.dispose())
-        }
-      })
+      disposeModel(scene)
       texture.dispose()
       renderer.dispose()
     }

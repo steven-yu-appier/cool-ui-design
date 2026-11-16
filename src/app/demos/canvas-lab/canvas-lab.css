@@ -376,17 +376,6 @@
   font-size: 11px;
   color: #a5b39a;
 }
-.player-settings label {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-.player-settings input {
-  accent-color: #a1ef91;
-}
-.player-settings input[type="range"] {
-  width: 100px;
-}
 .player-settings > span {
   margin-left: auto;
   font-size: 10px;
@@ -504,36 +493,6 @@
 .player-slider[data-disabled] .slider-control {
   cursor: default;
 }
-.effects-checkbox {
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  background: #203426;
-  border: 1px solid #8ab77c;
-  border-radius: 3px;
-  cursor: pointer;
-}
-.effects-checkbox[data-checked] {
-  background: #a1ef91;
-  color: #102310;
-}
-.strength-setting {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-}
-.strength-setting .player-slider {
-  width: 100px;
-}
-.player-settings .slider-track {
-  height: 4px;
-}
-.player-settings .slider-thumb {
-  width: 13px;
-  height: 13px;
-}
-
 .crt-search-region {
   position: relative;
   z-index: 2;
