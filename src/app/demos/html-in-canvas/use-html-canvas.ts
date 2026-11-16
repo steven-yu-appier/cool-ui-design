@@ -51,11 +51,14 @@ export function useHtmlCanvas(
     }
 
     let failed = false
+    let pendingPaint = 0
+    let paintRetries = 0
     function paint() {
       if (!canvas || !panel || !context || failed) return
       try {
         context.clearRect(0, 0, canvas.width, canvas.height)
         context.drawElementImage(panel, 0, 0, canvas.width, canvas.height)
+        paintRetries = 0
         if (scanlines) {
           context.fillStyle = "rgba(0, 0, 0, 0.13)"
           const spacing = 4 * window.devicePixelRatio
@@ -64,6 +67,16 @@ export function useHtmlCanvas(
           }
         }
       } catch (error) {
+        // A slide can enter from outside the viewport before its DOM paint is cached.
+        if (
+          error instanceof Error &&
+          error.message.includes("No cached paint record") &&
+          paintRetries++ < 60
+        ) {
+          cancelAnimationFrame(pendingPaint)
+          pendingPaint = requestAnimationFrame(() => canvas.requestPaint())
+          return
+        }
         failed = true
         onError(
           `原生繪製失敗，已切回 DOM 預覽。${error instanceof Error ? error.message : ""}`
@@ -93,6 +106,7 @@ export function useHtmlCanvas(
     canvas.requestPaint()
 
     return () => {
+      cancelAnimationFrame(pendingPaint)
       observer.disconnect()
       canvas.removeEventListener("paint", paint)
     }

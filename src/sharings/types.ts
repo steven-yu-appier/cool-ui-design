@@ -6,6 +6,7 @@ export interface SlideConfig {
   description?: string
   notes?: string
   demo?: () => ReactNode
+  content?: ReactNode
   code?: string
   lang?: string
 }

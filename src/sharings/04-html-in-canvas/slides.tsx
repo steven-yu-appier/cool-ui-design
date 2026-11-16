@@ -1,21 +1,13 @@
 import type { ReactNode } from "react"
 import { ArrowDown, ArrowUpRight } from "lucide-react"
+import { HologramDemo } from "@/app/demos/html-in-canvas/hologram-demo"
+import { CrtDemo } from "@/app/demos/canvas-lab/crt-demo"
+import "@/app/demos/html-in-canvas/hologram.css"
+import "@/app/demos/canvas-lab/canvas-lab.css"
+import "./embedded-demos.css"
 
 function Frame({ children }: { children: ReactNode }) {
   return <div className="w-full max-w-5xl space-y-6">{children}</div>
-}
-
-function DemoLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-3 rounded-lg bg-emerald-500 px-6 py-4 text-lg font-medium text-black"
-    >
-      {children} <ArrowUpRight className="size-5" />
-    </a>
-  )
 }
 
 function Steps({ items }: { items: string[] }) {
@@ -42,7 +34,7 @@ export function TitleSlide() {
         FRONTEND STUDY GROUP · 15–20 MIN
       </p>
       <h1 className="text-foreground text-5xl leading-tight font-semibold tracking-tight">
-        HTML 可以畫進 <span className="text-emerald-500">Canvas</span> 嗎？
+        HTML-in-<span className="text-emerald-500">Canvas</span>
       </h1>
       <p className="text-2xl leading-10 text-secondary">
         保留 HTML 的互動能力，取得 Canvas 的繪圖自由。
@@ -53,24 +45,7 @@ export function TitleSlide() {
 }
 
 export function CardDemoSlide() {
-  return (
-    <Frame>
-      <p className="text-sm text-emerald-500">DEMO 01 · MISSION CONTROL</p>
-      <h3 className="text-foreground text-4xl font-semibold">
-        這張卡片，還能輸入嗎？
-      </h3>
-      <ol className="list-decimal space-y-4 pl-6 text-xl leading-8 text-secondary">
-        <li>修改 Station Name。</li>
-        <li>切換 Uplink、調整 Signal Power。</li>
-        <li>開啟掃描線、改變角度。</li>
-        <li>切換 DOM／Canvas，觀察內容與狀態。</li>
-      </ol>
-      <DemoLink href="/demos/html-in-canvas">開啟卡片 Demo</DemoLink>
-      <p className="text-sm text-secondary">
-        確認 NATIVE API ACTIVE；DOM PREVIEW 是 fallback。
-      </p>
-    </Frame>
-  )
+  return <HologramDemo embedded />
 }
 
 export function StatusSlide() {
@@ -148,7 +123,7 @@ drawUpdatedUI()`}</code>
   </form>
 )
 
-canvas.drawHTML(panel)`}</code>
+canvas.drawHTML(panel) // 概念而已，非實際 API。`}</code>
           </pre>
         </div>
       </div>
@@ -156,8 +131,7 @@ canvas.drawHTML(panel)`}</code>
         沿用 HTML 的排版與互動能力，再交給 Canvas 呈現。
       </p>
       <p className="text-sm text-secondary">
-        概念示意：drawHTML() 並非實際 API。「以前」指直接手繪 Canvas
-        UI，也可透過套件實作。
+        概念示意：「以前」指直接手繪 Canvas UI，也可透過套件實作。
       </p>
     </Frame>
   )
@@ -230,16 +204,41 @@ export function RevealSlide() {
 
 export function CrtDemoSlide() {
   return (
-    <Frame>
-      <p className="text-sm text-emerald-500">DEMO 02 · PHOSPHOR FM</p>
-      <h3 className="text-foreground text-5xl leading-tight font-semibold">
-        可以操作的 CRT／TV
-      </h3>
-      <p className="text-2xl leading-10 text-secondary">
-        同樣是 HTML，這次成為 3D 螢幕的材質。
-      </p>
-      <DemoLink href="/demos/canvas-lab#crt">開啟 CRT／TV Demo</DemoLink>
-    </Frame>
+    <div className="sharing-crt">
+      <CrtDemo />
+    </div>
+  )
+}
+
+export function CrtExplanation() {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3">
+        <p className="text-sm tracking-widest text-emerald-500">
+          LIVE HTML → 3D
+        </p>
+        <h3 className="text-foreground text-2xl font-semibold">
+          讓 HTML 成為螢幕的材質
+        </h3>
+        <p className="text-base leading-7 text-secondary">
+          拖曳背景，觀察凸面玻璃與機殼。改變視角後，螢幕仍然可以操作。
+        </p>
+      </div>
+      <Steps
+        items={["HTML + CSS", "即時材質 → 凸面螢幕", "玻璃反光 + CRT 效果"]}
+      />
+      <div className="space-y-2 border-t border-border pt-4 text-sm leading-6 text-secondary">
+        <p>
+          <span className="text-emerald-500">HTML-in-Canvas</span>{" "}
+          提供介面畫面。
+        </p>
+        <p>
+          <span className="text-emerald-500">Three.js / shader</span>{" "}
+          負責場景與視覺效果。
+        </p>
+        <p>畫面變形後，也要同步互動位置。</p>
+      </div>
+    </div>
   )
 }
 

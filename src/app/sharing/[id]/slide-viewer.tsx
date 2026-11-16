@@ -128,6 +128,7 @@ export function SlideViewer({ sharing }: { sharing: SharingConfig }) {
               title={slide.title}
               description={slide.description}
               demo={slide.demo?.()}
+              content={slide.content}
               code={slide.code}
               lang={slide.lang}
             />

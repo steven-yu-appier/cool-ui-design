@@ -33,7 +33,7 @@ canvas.addEventListener("paint", () => {
 });
 canvas.requestPaint();`
 
-export function HologramDemo() {
+export function HologramDemo({ embedded = false }: { embedded?: boolean }) {
   const [mode, setMode] = useState<"canvas" | "dom">("canvas")
   const [accent, setAccent] = useState<string>(colors[0].value)
   const [orbit, setOrbit] = useState(true)
@@ -209,6 +209,116 @@ export function HologramDemo() {
     </div>
   )
 
+  const stage = (
+    <section
+      className={`holo-stage ${mode === "dom" ? "is-dom" : ""}`}
+      aria-label="Holographic control panel"
+    >
+      <div className="stage-topline">
+        <span>
+          <span className="connection-dot online" />
+          {mode === "dom"
+            ? "SOURCE / DOM"
+            : native
+              ? "LIVE / NATIVE CANVAS"
+              : "LIVE / DOM PREVIEW"}
+        </span>
+        <span>HOLO PROJECTION / 01</span>
+      </div>
+      <div className="stage-grid" aria-hidden="true" />
+      <div className="stage-cross cross-tl" aria-hidden="true">
+        +
+      </div>
+      <div className="stage-cross cross-br" aria-hidden="true">
+        +
+      </div>
+      <div className="projection-base" aria-hidden="true" />
+      <div
+        className={`holo-scene ${orbit && mode === "canvas" ? "is-orbiting" : ""}`}
+      >
+        <div className="panel-ghost ghost-back" aria-hidden="true" />
+        <div className="panel-ghost ghost-front" aria-hidden="true" />
+        <div className="panel-surface">
+          {native ? (
+            <canvas
+              ref={canvasRef}
+              {...{ content: "drawable" }}
+              width={380}
+              height={500}
+              className="holo-canvas"
+            >
+              {panel}
+            </canvas>
+          ) : (
+            panel
+          )}
+          {!native && mode === "canvas" && scanlines ? (
+            <div className="scanline-overlay" aria-hidden="true" />
+          ) : null}
+        </div>
+      </div>
+      {transmissions > 0 && mode === "canvas" ? (
+        <div
+          key={transmissions}
+          className="transmission-ring"
+          aria-hidden="true"
+        />
+      ) : null}
+      <div className="stage-bottomline">
+        <span>
+          <Crosshair size={12} />{" "}
+          {mode === "dom"
+            ? "ORIGINAL HTML / SAME STATE"
+            : "HOVER OR FOCUS TO STEADY THE PANEL"}
+        </span>
+        <span>X / Y / Z</span>
+      </div>
+    </section>
+  )
+
+  if (embedded) {
+    return (
+      <div
+        className="holo-app holo-embedded"
+        style={
+          {
+            "--holo-accent": accent,
+            "--holo-tilt": `${tilt}deg`,
+          } as CSSProperties
+        }
+      >
+        {stage}
+        <div className="holo-embedded-controls">
+          <div className="renderer-switch" role="group" aria-label="Renderer">
+            <button
+              type="button"
+              aria-pressed={mode === "canvas"}
+              onClick={() => setMode("canvas")}
+            >
+              Canvas
+            </button>
+            <button
+              type="button"
+              aria-pressed={mode === "dom"}
+              onClick={() => setMode("dom")}
+            >
+              DOM
+            </button>
+          </div>
+          <label>
+            <input
+              type="checkbox"
+              checked={scanlines}
+              onChange={(event) => setScanlines(event.target.checked)}
+            />{" "}
+            Scanlines
+          </label>
+        </div>
+        {error && <p role="status">{error}</p>}
+      </div>
+    )
+  }
+
   return (
     <main
       className="holo-app"
@@ -257,70 +367,7 @@ export function HologramDemo() {
         </div>
       </div>
       <div className="holo-workspace">
-        <section
-          className={`holo-stage ${mode === "dom" ? "is-dom" : ""}`}
-          aria-label="Holographic control panel"
-        >
-          <div className="stage-topline">
-            <span>
-              <span className="connection-dot online" />
-              {mode === "dom"
-                ? "SOURCE / DOM"
-                : native
-                  ? "LIVE / NATIVE CANVAS"
-                  : "LIVE / DOM PREVIEW"}
-            </span>
-            <span>HOLO PROJECTION / 01</span>
-          </div>
-          <div className="stage-grid" aria-hidden="true" />
-          <div className="stage-cross cross-tl" aria-hidden="true">
-            +
-          </div>
-          <div className="stage-cross cross-br" aria-hidden="true">
-            +
-          </div>
-          <div className="projection-base" aria-hidden="true" />
-          <div
-            className={`holo-scene ${orbit && mode === "canvas" ? "is-orbiting" : ""}`}
-          >
-            <div className="panel-ghost ghost-back" aria-hidden="true" />
-            <div className="panel-ghost ghost-front" aria-hidden="true" />
-            <div className="panel-surface">
-              {native ? (
-                <canvas
-                  ref={canvasRef}
-                  {...{ content: "drawable" }}
-                  width={380}
-                  height={500}
-                  className="holo-canvas"
-                >
-                  {panel}
-                </canvas>
-              ) : (
-                panel
-              )}
-              {!native && mode === "canvas" && scanlines ? (
-                <div className="scanline-overlay" aria-hidden="true" />
-              ) : null}
-            </div>
-          </div>
-          {transmissions > 0 && mode === "canvas" ? (
-            <div
-              key={transmissions}
-              className="transmission-ring"
-              aria-hidden="true"
-            />
-          ) : null}
-          <div className="stage-bottomline">
-            <span>
-              <Crosshair size={12} />{" "}
-              {mode === "dom"
-                ? "ORIGINAL HTML / SAME STATE"
-                : "HOVER OR FOCUS TO STEADY THE PANEL"}
-            </span>
-            <span>X / Y / Z</span>
-          </div>
-        </section>
+        {stage}
         <aside className="holo-controls" aria-label="Projection settings">
           <div className="controls-title">
             <span className="micro-label">PROJECTION LAB</span>

@@ -4,6 +4,7 @@ import {
   ClosingSlide,
   ComparisonSlide,
   CrtDemoSlide,
+  CrtExplanation,
   DesignSlide,
   ModelSlide,
   RevealSlide,
@@ -33,6 +34,21 @@ HTML-in-Canvas 試著把這兩邊接起來。先從一張可以操作的卡片�
       id: "card-demo",
       title: "Demo ①：這張卡片，還能輸入嗎？",
       demo: () => <CardDemoSlide />,
+      lang: "tsx",
+      code: `// 試著修改名稱、切換連線、調整訊號。
+// 在 Canvas／DOM 之間切換，狀態保持不變。
+// Scanlines 會在 HTML 畫面上疊加掃描線。
+
+<canvas content="drawable">
+  <form drawable>
+    <input />
+    <button>Send</button>
+  </form>
+</canvas>
+
+// HTML 繼續負責排版與互動。
+// Canvas 負責組合最後的畫面。
+ctx.drawElementImage(form, 0, 0)`,
       notes: `這張卡片畫在 Canvas 裡，但輸入框、開關和滑桿仍然可以操作。
 
 我們可以修改名稱，再切回 DOM 模式，看到相同的內容與狀態。這裡的介面仍然由 React 與 HTML 管理，Canvas 負責呈現它的畫面。
@@ -93,12 +109,13 @@ content="drawable" 讓 Canvas 裡的 HTML 參與排版；drawable 標記要獨�
 
 接著把條件再往前推：如果介面要放進真正的 3D 場景，被機殼包住，跟著凸面的玻璃彎曲，而且轉到側面仍然可以操作呢？
 
-停頓一下，再切到下一張並開啟 CRT／TV demo。`,
+停頓一下，再切到下一張，直接操作投影片內的 CRT／TV demo。`,
     },
     {
       id: "crt-demo",
       title: "Demo ②：可以操作的 CRT／TV",
       demo: () => <CrtDemoSlide />,
+      content: <CrtExplanation />,
       notes: `剛才是一張平面卡片，現在把 HTML 放進桌上的 CRT。
 
 注意螢幕裡的內容：它跟著玻璃呈現凸面的形狀，外圍有模糊與色偏。即使轉動視角，裡面的介面依然可以操作。
