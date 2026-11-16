@@ -8,7 +8,7 @@ import {
 
 import { cn } from "@/lib/utils"
 
-export interface SelectableToolbarProps {
+interface SelectableToolbarProps {
   children: (selectedIds: Set<string>) => React.ReactNode
   className?: string
   offset?: { x?: number; y?: number }

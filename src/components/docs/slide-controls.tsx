@@ -22,6 +22,14 @@ export function SlideControls({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (
+        e.defaultPrevented ||
+        (e.target instanceof Element &&
+          e.target.closest(
+            "input, textarea, select, button, [role='slider'], [role='combobox'], [contenteditable]:not([contenteditable='false'])"
+          ))
+      )
+        return
       if (e.key === "ArrowLeft" && hasPrev) onPrev()
       if (e.key === "ArrowRight" && hasNext) onNext()
     },
