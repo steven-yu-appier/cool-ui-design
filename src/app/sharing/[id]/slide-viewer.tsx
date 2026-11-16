@@ -101,6 +101,17 @@ export function SlideViewer({ sharing }: { sharing: SharingConfig }) {
         </div>
       </header>
 
+      {slide.notes && (
+        <details className="relative z-10 shrink-0 border-b border-border px-6 py-2">
+          <summary className="w-fit cursor-pointer text-sm text-secondary">
+            口說草稿
+          </summary>
+          <div className="absolute inset-x-0 top-full max-h-64 overflow-y-auto border-b border-border bg-popover px-6 py-4 text-sm leading-7 whitespace-pre-line text-secondary shadow-lg">
+            {slide.notes}
+          </div>
+        </details>
+      )}
+
       <main className="relative flex-1 overflow-hidden">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
